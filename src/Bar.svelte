@@ -3,7 +3,7 @@
 </script>
 
 <header>
-    <h1>Connect Four</h1>
+    <h1>Finger Pong</h1>
     {#if $roomStore && Object.keys($roomStore).length != 0}
         <div class="side-left">
             <span>{$roomStore.id}</span>

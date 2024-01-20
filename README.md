@@ -1,4 +1,4 @@
-# connect-four
+# finger-pong
 
 This is a project template from https://github.com/sveltejs/template.
 

@@ -6,8 +6,11 @@
 	import EndDialog from './EndDialog.svelte';
 	import Chat from './Chat.svelte';
 	import { onMount } from 'svelte';
+	import { Peer } from "peerjs";
 	import PlayerList from './PlayerList.svelte';
 	import Status from './Status.svelte';
+	import LiveGesture from './LiveGesture.svelte'
+	import VideoFeed from './VideoFeed.svelte'
 
 	onMount(() => {
 		const session = $sessionStore;
@@ -39,6 +42,10 @@
 	$socketStore.on('updateRoom', (room) => {
 		console.log("updateRoom", room)
 		$roomStore = room
+
+		if ($roomStore.players == 2) {
+			$roomStore.board = JSON.parse($roomStore.board)
+		}
 	});
 
 	$socketStore.on('leaveRoom', () => {
@@ -60,7 +67,9 @@
 		{:else}
 			<Status />
 			<PlayerList players={$roomStore.players} teams={$roomStore.teams} turn={$roomStore.turn}/>
-			<Board board={$roomStore.board} width={$roomStore.boardWidth} height={$roomStore.boardHeight}/>
+			<!-- <LiveGesture /> -->
+			<VideoFeed />
+			<!-- <Board board={$roomStore.board} width={$roomStore.boardWidth} height={$roomStore.boardHeight}/> -->
 			<EndDialog />
 			<Chat />
 		{/if}

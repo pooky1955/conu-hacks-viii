@@ -7,12 +7,16 @@ import { SessionStore } from "./sessionStore.js"
 const sessionStore = new SessionStore();
 import { RoomStore } from "./roomStore.js";
 export const roomStore = new RoomStore();
+import { PeerServer } from "peer";
 
 const PORT = process.env.PORT || 3000;
+const app = express();
 
-const server = express().use(express.static('public'))
+const server = app.use(express.static('public'))
 
 const httpServer = createServer(server).listen(PORT, () => console.log(`Listening on ${PORT}`));;
+
+const peerServer = PeerServer({ port: 9000, path: '/rtc' });
 
 const io = new Server(httpServer, {
   cors: {
@@ -117,6 +121,7 @@ io.on("connection", async (socket) => {
       room = startRoom(room)
     }
     socket.join(room.id)
+    io.to(room.id).emit("callPlayer", { id: socket.userId, username: socket.username })
     updateRoom(room)
     callback(room);
   })

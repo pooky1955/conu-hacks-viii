@@ -67,7 +67,6 @@
 			<Join />
 		{:else}
 			<PlayerList players={$roomStore.players} teams={$roomStore.teams} turn={$roomStore.turn}/>
-			<Status />
 			<Table/>
 			<!-- <Board board={$roomStore.board} width={$roomStore.boardWidth} height={$roomStore.boardHeight}/> -->
 			<EndDialog />

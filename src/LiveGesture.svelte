@@ -1,287 +1,234 @@
 <script>
-     import { GestureRecognizer, FilesetResolver, DrawingUtils } from "@mediapipe/tasks-vision";
-//   let vision, gestureRecognizer;
-  (async function (){
+	import { GestureRecognizer, FilesetResolver, DrawingUtils } from "@mediapipe/tasks-vision"
+	//   let vision, gestureRecognizer;
+	;(async function () {
+		let vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm")
+		let gestureRecognizer = await GestureRecognizer.createFromModelPath(
+			vision,
+			"https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task"
+		)
 
- let vision = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
-);
- let gestureRecognizer = await GestureRecognizer.createFromModelPath(vision,
-    "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task"
-);
+		// const image = document.getElementById("image");
+		// const recognitions = gestureRecognizer.recognize(image);
 
-// const image = document.getElementById("image");
-// const recognitions = gestureRecognizer.recognize(image);
+		let webcamRunning = false
+		const videoHeight = "360px"
+		const videoWidth = "480px"
 
-const demosSection = document.getElementById("demos");
-let runningMode = "IMAGE";
-let enableWebcamButton;
-let webcamRunning = false;
-const videoHeight = "360px";
-const videoWidth = "480px";
+		navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((myStream) => {
+			video.srcObject = myStream
+			video.addEventListener("loadeddata", predictWebcam)
+      webcamRunning = true
+		})
 
-// Before we can use HandLandmarker class we must wait for it to finish
-// loading. Machine Learning models can be large and take a moment to
-// get everything needed to run.
-const createGestureRecognizer = async () => {
-  const vision = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
-  );
-  gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
-    baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
-      delegate: "GPU"
-    },
-    runningMode: runningMode
-  });
-  demosSection.classList.remove("invisible");
-};
-createGestureRecognizer();
+		// Before we can use HandLandmarker class we must wait for it to finish
+		// loading. Machine Learning models can be large and take a moment to
+		// get everything needed to run.
+		const createGestureRecognizer = async () => {
+			const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm")
+			gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+				baseOptions: {
+					modelAssetPath: "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+					delegate: "GPU",
+				},
+				runningMode: "VIDEO",
+			})
+		}
+		createGestureRecognizer()
 
-const video = document.getElementById("webcam");
-const canvasElement = document.getElementById("output_canvas");
-const canvasCtx = canvasElement.getContext("2d");
-const gestureOutput = document.getElementById("gesture_output");
+		const video = document.getElementById("webcam")
+		const canvasElement = document.getElementById("output_canvas")
+		const canvasCtx = canvasElement.getContext("2d")
+		const gestureOutput = document.getElementById("gesture_output")
 
-// Check if webcam access is supported.
-function hasGetUserMedia() {
-  return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-}
+		// Check if webcam access is supported.
+		// function hasGetUserMedia() {
+		// 	return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+		// }
 
-// If webcam supported, add event listener to button for when user
-// wants to activate it.
-if (hasGetUserMedia()) {
-  enableWebcamButton = document.getElementById("webcamButton");
-  enableWebcamButton.addEventListener("click", enableCam);
-} else {
-  console.warn("getUserMedia() is not supported by your browser");
-}
+		// If webcam supported, add event listener to button for when user
+		// wants to activate it.
+		// if (hasGetUserMedia()) {
+		// 	enableWebcamButton = document.getElementById("webcamButton")
+		// 	enableWebcamButton.addEventListener("click", enableCam)
+		// } else {
+		// 	console.warn("getUserMedia() is not supported by your browser")
+		// }
 
-// Enable the live webcam view and start detection.
-function enableCam(event) {
-  if (!gestureRecognizer) {
-    alert("Please wait for gestureRecognizer to load");
-    return;
-  }
+		// Enable the live webcam view and start detection.
+		// function enableCam(event) {
+		// 	if (!gestureRecognizer) {
+		// 		alert("Please wait for gestureRecognizer to load")
+		// 		return
+		// 	}
 
-  if (webcamRunning === true) {
-    webcamRunning = false;
-    enableWebcamButton.innerText = "ENABLE PREDICTIONS";
-  } else {
-    webcamRunning = true;
-    enableWebcamButton.innerText = "DISABLE PREDICTIONS";
-  }
+		// 	if (webcamRunning === true) {
+		// 		webcamRunning = false
+		// 		enableWebcamButton.innerText = "ENABLE PREDICTIONS"
+		// 	} else {
+		// 		webcamRunning = true
+		// 		enableWebcamButton.innerText = "DISABLE PREDICTIONS"
+		// 	}
 
-  // getUsermedia parameters.
-  const constraints = {
-    video: true
-  };
+		// 	// getUsermedia parameters.
+		// 	const constraints = {
+		// 		video: true,
+		// 	}
 
-  // Activate the webcam stream.
-  navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
-    video.srcObject = stream;
-    video.addEventListener("loadeddata", predictWebcam);
-  });
-}
+		// 	// Activate the webcam stream.
+		// 	navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+		// 		video.srcObject = stream
+		// 		video.addEventListener("loadeddata", predictWebcam)
+		// 	})
+		// }
 
-let lastVideoTime = -1;
-let results = undefined;
-async function predictWebcam() {
-  const webcamElement = document.getElementById("webcam");
-  // Now let's start detecting the stream.
-  if (runningMode === "IMAGE") {
-    runningMode = "VIDEO";
-    await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
-  }
-  let nowInMs = Date.now();
-  if (video.currentTime !== lastVideoTime) {
-    lastVideoTime = video.currentTime;
-    results = gestureRecognizer.recognizeForVideo(video, nowInMs);
-  }
+		let lastVideoTime = -1
+		let results = undefined
+		async function predictWebcam() {
+			const webcamElement = document.getElementById("webcam")
+			// Now let's start detecting the stream.
+			let nowInMs = Date.now()
+			if (video.currentTime !== lastVideoTime) {
+				lastVideoTime = video.currentTime
+				results = gestureRecognizer.recognizeForVideo(video, nowInMs)
+			}
 
-  canvasCtx.save();
-  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-  const drawingUtils = new DrawingUtils(canvasCtx);
+			canvasCtx.save()
+			canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height)
+			const drawingUtils = new DrawingUtils(canvasCtx)
 
-  canvasElement.style.height = videoHeight;
-  webcamElement.style.height = videoHeight;
-  canvasElement.style.width = videoWidth;
-  webcamElement.style.width = videoWidth;
+			canvasElement.style.height = videoHeight
+			webcamElement.style.height = videoHeight
+			canvasElement.style.width = videoWidth
+			webcamElement.style.width = videoWidth
 
-  if (results.landmarks) {
-    // console.log(results.landmarks)
-    for (const landmarks of results.landmarks) {
-      drawingUtils.drawConnectors(
-        landmarks,
-        GestureRecognizer.HAND_CONNECTIONS,
-        {
-          color: "#00FF00",
-          lineWidth: 5
-        }
-      );
-      drawingUtils.drawLandmarks(landmarks, {
-        color: "#FF0000",
-        lineWidth: 2
-      });
-    }
-  }
-  canvasCtx.restore();
-  if (results.gestures.length > 0) {
-    // alert("found you!")
-    // alert(JSON.stringify(results))
-    gestureOutput.style.display = "block";
-    gestureOutput.style.width = videoWidth;
-    const categoryName = results.gestures[0][0].categoryName;
-    const categoryScore = parseFloat(
-      results.gestures[0][0].score * 100
-    ).toFixed(2);
-    const handedness = results.handednesses[0][0].displayName;
-    gestureOutput.innerText = `GestureRecognizer: ${categoryName}\n Confidence: ${categoryScore} %\n Handedness: ${handedness}`;
-    // debugger
-    let average = {x:0,y:0,z:0}
-    for (let landmark of results.landmarks[0]){
-      const {x,y,z} = landmark
-      // alert(landmark)
-      average.x += x
-      average.y += y
-      average.z += z
-    }
-    average.x /= results.landmarks[0].length
-    average.y /= results.landmarks[0].length
-    average.z /= results.landmarks[0].length
-    window.hand = average
+			if (results.landmarks) {
+				// console.log(results.landmarks)
+				for (const landmarks of results.landmarks) {
+					drawingUtils.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, {
+						color: "#00FF00",
+						lineWidth: 5,
+					})
+					drawingUtils.drawLandmarks(landmarks, {
+						color: "#FF0000",
+						lineWidth: 2,
+					})
+				}
+			}
+			canvasCtx.restore()
+			if (results.gestures.length > 0) {
+				// alert("found you!")
+				// alert(JSON.stringify(results))
+				gestureOutput.style.display = "block"
+				gestureOutput.style.width = videoWidth
+				const categoryName = results.gestures[0][0].categoryName
+				const categoryScore = parseFloat(results.gestures[0][0].score * 100).toFixed(2)
+				const handedness = results.handednesses[0][0].displayName
+				gestureOutput.innerText = `GestureRecognizer: ${categoryName}\n Confidence: ${categoryScore} %\n Handedness: ${handedness}`
+				// debugger
+				let average = { x: 0, y: 0, z: 0 }
+				for (let landmark of results.landmarks[0]) {
+					const { x, y, z } = landmark
+					// alert(landmark)
+					average.x += x
+					average.y += y
+					average.z += z
+				}
+				average.x /= results.landmarks[0].length
+				average.y /= results.landmarks[0].length
+				average.z /= results.landmarks[0].length
+				window.hand = average
 
-    // alert(`average is ${JSON.stringify(average)}`)
-      drawingUtils.drawLandmarks([average], {
-        color: "#0000FF",
-        lineWidth: 2
-      });
-      gestureOutput.innerHTML = `Position: ${JSON.stringify(average)}`
-    
-  } else {
-    gestureOutput.style.display = "none";
-  }
-  // Call this function again to keep predicting when the browser is ready.
-  if (webcamRunning === true) {
-    window.requestAnimationFrame(predictWebcam);
-  }
-}
-  })()
-
+				// alert(`average is ${JSON.stringify(average)}`)
+				drawingUtils.drawLandmarks([average], {
+					color: "#0000FF",
+					lineWidth: 2,
+				})
+				gestureOutput.innerHTML = `Position: ${JSON.stringify(average)}`
+			} else {
+				gestureOutput.style.display = "none"
+			}
+			// Call this function again to keep predicting when the browser is ready.
+			if (webcamRunning === true) {
+				window.requestAnimationFrame(predictWebcam)
+			}
+		}
+	})()
 </script>
 
 <div id="liveView" class="videoView">
-  <button id="webcamButton" class="mdc-button mdc-button--raised">
-    <span class="mdc-button__ripple"></span>
-    <span class="mdc-button__label">ENABLE WEBCAM</span>
-  </button>
-  <div style="position: relative;">
-    <video id="webcam" autoplay playsinline></video>
-    <canvas class="output_canvas" id="output_canvas" width="1280" height="720" style="position: absolute; left: 0px; top: 0px;"></canvas>
-    <p id='gesture_output' class="output">
-  </div>
+	<!-- <button id="webcamButton" class="mdc-button mdc-button--raised">
+		<span class="mdc-button__ripple"></span>
+		<span class="mdc-button__label">ENABLE WEBCAM</span>
+	</button> -->
+	<div style="position: relative;">
+		<video id="webcam" autoplay playsinline></video>
+		<canvas class="output_canvas" id="output_canvas" width="1280" height="720" style="position: absolute; left: 0px; top: 0px;"></canvas>
+		<p id="gesture_output" class="output"></p>
+	</div>
 </div>
 
 <style>
-  #webcam {
-    clear: both;
-    display: block;
-    transform: rotateY(180deg);
-    -webkit-transform: rotateY(180deg);
-    -moz-transform: rotateY(180deg);
-  }
+	#webcam {
+		clear: both;
+		display: block;
+		transform: rotateY(180deg);
+		-webkit-transform: rotateY(180deg);
+		-moz-transform: rotateY(180deg);
+	}
 
-  section {
-    opacity: 1;
-    transition: opacity 500ms ease-in-out;
-  }
+	.removed {
+		display: none;
+	}
 
-  header,
-  footer {
-    clear: both;
-  }
+	.invisible {
+		opacity: 0.2;
+	}
 
-  .removed {
-    display: none;
-  }
+	.note {
+		font-style: italic;
+		font-size: 130%;
+	}
 
-  .invisible {
-    opacity: 0.2;
-  }
+	.videoView,
+	.detectOnClick,
+	.blend-shapes {
+		/* position: relative;
+		float: left;
+		width: 48%;
+		margin: 2% 1%;
+		cursor: pointer; */
+	}
 
-  .note {
-    font-style: italic;
-    font-size: 130%;
-  }
+	.videoView p,
+	.detectOnClick p {
+		position: absolute;
+		padding: 5px;
+		background-color: #007f8b;
+		color: #fff;
+		border: 1px dashed rgba(255, 255, 255, 0.7);
+		z-index: 2;
+		font-size: 12px;
+		margin: 0;
+	}
 
-  .videoView,
-  .detectOnClick,
-  .blend-shapes {
-    position: relative;
-    float: left;
-    width: 48%;
-    margin: 2% 1%;
-    cursor: pointer;
-  }
+	.highlighter {
+		background: rgba(0, 255, 0, 0.25);
+		border: 1px dashed #fff;
+		z-index: 1;
+		position: absolute;
+	}
 
-  .videoView p,
-  .detectOnClick p {
-    position: absolute;
-    padding: 5px;
-    background-color: #007f8b;
-    color: #fff;
-    border: 1px dashed rgba(255, 255, 255, 0.7);
-    z-index: 2;
-    font-size: 12px;
-    margin: 0;
-  }
+	.canvas {
+		z-index: 1;
+		position: absolute;
+		pointer-events: none;
+	}
 
-  .highlighter {
-    background: rgba(0, 255, 0, 0.25);
-    border: 1px dashed #fff;
-    z-index: 1;
-    position: absolute;
-  }
+	.output_canvas {
+		transform: rotateY(180deg);
+		-webkit-transform: rotateY(180deg);
+		-moz-transform: rotateY(180deg);
+	}
 
-  .canvas {
-    z-index: 1;
-    position: absolute;
-    pointer-events: none;
-  }
-
-  .output_canvas {
-    transform: rotateY(180deg);
-    -webkit-transform: rotateY(180deg);
-    -moz-transform: rotateY(180deg);
-  }
-
-  .detectOnClick {
-    z-index: 0;
-  }
-
-  .detectOnClick img {
-    width: 100%;
-  }
-
-  .blend-shapes-item {
-    display: flex;
-    align-items: center;
-    height: 20px;
-  }
-
-  .blend-shapes-label {
-    display: flex;
-    width: 120px;
-    justify-content: flex-end;
-    align-items: center;
-    margin-right: 4px;
-  }
-
-  .blend-shapes-value {
-    display: flex;
-    height: 16px;
-    align-items: center;
-    background-color: #007f8b;
-  }
 </style>

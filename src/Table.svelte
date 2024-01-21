@@ -2,6 +2,7 @@
 	import { onMount } from "svelte"
 	import VideoFeed from "./VideoFeed.svelte"
 	import LiveGesture from "./LiveGesture.svelte"
+  import Status from "./Status.svelte"
 
 	onMount(() => {
 		alert("mounted canvas!")
@@ -11,6 +12,9 @@
 </script>
 
 <div id="table">
+	<div id="status">
+		<Status />
+	</div>
 	<div id="video">
 		<VideoFeed />
 	</div>
@@ -26,6 +30,14 @@
 		width: 100%;
 		height: 100vh;
 	}
+
+  #status {
+    position: absolute;
+    top: 2%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+  }
 
 	#liveGesture {
 		position: absolute;

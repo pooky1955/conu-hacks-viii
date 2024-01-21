@@ -19,7 +19,8 @@
 <style>
 	.status {
 		color: #4883b5;
-		font-size: 1.35em;
+		font-size: 2em;
+		font-weight: 700;
 		margin: 0;
 		animation: breathing 5s infinite ease-in-out;
 	}
@@ -30,7 +31,7 @@
 		}
 
 		50% {
-			opacity: 0.2;
+			opacity: 0.4;
 		}
 
 		100% {

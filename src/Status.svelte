@@ -18,23 +18,23 @@
 
 <style>
 	.status {
-		color: #776e65;
+		color: #4883b5;
 		font-size: 1.35em;
 		margin: 0;
-        animation: breathing 5s infinite ease-in-out;
+		animation: breathing 5s infinite ease-in-out;
 	}
 
 	@keyframes breathing {
 		0% {
-            opacity: 1;
+			opacity: 1;
 		}
 
 		50% {
-            opacity: 0.2;
+			opacity: 0.2;
 		}
 
 		100% {
-            opacity: 1;
+			opacity: 1;
 		}
 	}
 

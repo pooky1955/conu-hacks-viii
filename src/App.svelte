@@ -66,11 +66,8 @@
 		{#if !$roomStore || Object.keys($roomStore).length == 0}
 			<Join />
 		{:else}
-			<Status />
-			<PlayerList players={$roomStore.players} teams={$roomStore.teams} turn={$roomStore.turn}/>
-			<Table></Table>
-			<LiveGesture />
-			<VideoFeed />
+			<!-- <PlayerList players={$roomStore.players} teams={$roomStore.teams} turn={$roomStore.turn}/> -->
+			<Table/>
 			<!-- <Board board={$roomStore.board} width={$roomStore.boardWidth} height={$roomStore.boardHeight}/> -->
 			<EndDialog />
 			<Chat />
@@ -87,6 +84,7 @@
 		text-align: center;
 		margin: 0;
 		height: 100vh;
+		background: linear-gradient(180deg, rgb(80,80,80) 0%, rgb(30,30,30) 100%);
 	}
 
 	.content {

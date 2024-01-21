@@ -97,7 +97,7 @@
         padding: 0.5em;
         border-radius: 0.5em;
         gap: 0.3em;
-        background-color: #fafafa;
+        background-color: #2a2a2a;
         width: 80%;
         box-shadow: 0 0 0.5em 0 rgba(0, 0, 0, 0.1);
     }

@@ -174,116 +174,40 @@ async function predictWebcam() {
 </script>
 
 <div id="liveView" class="videoView">
-  <button id="webcamButton" class="mdc-button mdc-button--raised">
-    <span class="mdc-button__ripple"></span>
-    <span class="mdc-button__label">ENABLE WEBCAM</span>
-  </button>
-  <div style="position: relative;">
-    <video id="webcam" autoplay playsinline></video>
-    <canvas class="output_canvas" id="output_canvas" width="1280" height="720" style="position: absolute; left: 0px; top: 0px;"></canvas>
-    <p id='gesture_output' class="output">
-  </div>
+	<!-- <button id="webcamButton" class="mdc-button mdc-button--raised">
+		<span class="mdc-button__ripple"></span>
+		<span class="mdc-button__label">ENABLE WEBCAM</span>
+	</button> -->
+	<div style="position: relative;">
+		<video id="webcam" autoplay playsinline></video>
+		<canvas class="output_canvas" id="output_canvas" width="1280" height="720" style="position: absolute; left: 0px; top: 0px;"></canvas>
+		<p id="gesture_output" class="output"></p>
+	</div>
 </div>
 
 <style>
-  #webcam {
-    clear: both;
-    display: block;
-    transform: rotateY(180deg);
-    -webkit-transform: rotateY(180deg);
-    -moz-transform: rotateY(180deg);
-  }
+	#webcam {
+		clear: both;
+		display: block;
+		transform: rotateY(180deg);
+		-webkit-transform: rotateY(180deg);
+		-moz-transform: rotateY(180deg);
+	}
 
-  section {
-    opacity: 1;
-    transition: opacity 500ms ease-in-out;
-  }
+	.videoView p {
+		position: absolute;
+		padding: 5px;
+		background-color: #007f8b;
+		color: #fff;
+		border: 1px dashed rgba(255, 255, 255, 0.7);
+		z-index: 2;
+		font-size: 12px;
+		margin: 0;
+	}
 
-  header,
-  footer {
-    clear: both;
-  }
-
-  .removed {
-    display: none;
-  }
-
-  .invisible {
-    opacity: 0.2;
-  }
-
-  .note {
-    font-style: italic;
-    font-size: 130%;
-  }
-
-  .videoView,
-  .detectOnClick,
-  .blend-shapes {
-    position: relative;
-    float: left;
-    width: 48%;
-    margin: 2% 1%;
-    cursor: pointer;
-  }
-
-  .videoView p,
-  .detectOnClick p {
-    position: absolute;
-    padding: 5px;
-    background-color: #007f8b;
-    color: #fff;
-    border: 1px dashed rgba(255, 255, 255, 0.7);
-    z-index: 2;
-    font-size: 12px;
-    margin: 0;
-  }
-
-  .highlighter {
-    background: rgba(0, 255, 0, 0.25);
-    border: 1px dashed #fff;
-    z-index: 1;
-    position: absolute;
-  }
-
-  .canvas {
-    z-index: 1;
-    position: absolute;
-    pointer-events: none;
-  }
-
-  .output_canvas {
-    transform: rotateY(180deg);
-    -webkit-transform: rotateY(180deg);
-    -moz-transform: rotateY(180deg);
-  }
-
-  .detectOnClick {
-    z-index: 0;
-  }
-
-  .detectOnClick img {
-    width: 100%;
-  }
-
-  .blend-shapes-item {
-    display: flex;
-    align-items: center;
-    height: 20px;
-  }
-
-  .blend-shapes-label {
-    display: flex;
-    width: 120px;
-    justify-content: flex-end;
-    align-items: center;
-    margin-right: 4px;
-  }
-
-  .blend-shapes-value {
-    display: flex;
-    height: 16px;
-    align-items: center;
-    background-color: #007f8b;
-  }
+	.output_canvas {
+		transform: rotateY(180deg);
+		-webkit-transform: rotateY(180deg);
+		-moz-transform: rotateY(180deg);
+	}
 </style>

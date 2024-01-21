@@ -1,10 +1,10 @@
 <script>
 	import { Peer } from "peerjs"
-	import { socketStore, roomStore, userStore } from "./store.js"
-	import { FaceDetector, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
+	import { socketStore } from "./store.js"
+	import { FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision"
 
 	const peer = new Peer($socketStore.userId, {
-		//TODO: change to production server
+		// TODO: change to production server
 		host: "localhost",
 		port: 9000,
 		path: "/rtc",
@@ -120,7 +120,6 @@
 			if (detections.length > 0) {
 				computeFaceBox(detections[0])
 			}
-			// displayVideoDetections(detections)
 		}
 
 		// Call this function again to keep predicting when the browser is ready
@@ -129,7 +128,7 @@
 
 	const computeFaceBox = (detection) => {
 		const video = document.getElementById("remoteVideo")
-		const { width, height, originX, originY } = detection.boundingBox
+		const { width, originX, originY } = detection.boundingBox
 		const relativeLeft = ((video.videoWidth - originX - width) * 100) / video.videoWidth
 		const relativeLeft2 = ((video.videoWidth - originX - width / 2) * 100) / video.videoWidth
 		const relativeTop = (originY * 100) / video.videoHeight
@@ -137,56 +136,11 @@
 		// // console.log(video, width, video.videoWidth, relativeLeft, relativeTop, relativeWidth)
 		// // console.log("video ")
 		document.getElementById("square").style = "left: " + relativeLeft + "%;" + "top: " + relativeTop + "%;" + "width: " + relativeWidth + "%;"
-		// const scale = 1/((relativeWidth+20)/100)
-		const scale = video.videoWidth / (width + 200)
+		const scale = video.videoWidth / (width + 300)
 		document.getElementById("remoteVideoFilter").style =
-			"transform:  scale(" + scale + ") translate(" + (50 - relativeLeft2) + "%, " + (50 - relativeTop - 5) + "%);"
+			"transform: scale(" + scale + ") translate(" + (50 - relativeLeft2) + "%, " + (50 - relativeTop - 10) + "%);"
+		document.getElementById("liveView").style = "display: flex; left: " + relativeLeft + "%;"
 	}
-
-	// function displayVideoDetections(detections) {
-	// 	// Remove any highlighting from previous frame.
-	// 	var children = []
-	// 	const liveView = document.getElementById("liveView")
-	// 	let video = document.getElementById("remoteVideo")
-	// 	for (let child of children) {
-	// 		liveView.removeChild(child)
-	// 	}
-	// 	children.splice(0)
-	// 	// Iterate through predictions and draw them to the live view
-	// 	for (let detection of detections) {
-
-	// 		const highlighter = document.createElement("div")
-	// 		highlighter.setAttribute("class", "highlighter")
-	// 		highlighter.style =
-	// 			"left: " +
-	// 			(video.offsetWidth - detection.boundingBox.width - detection.boundingBox.originX) +
-	// 			"px;" +
-	// 			"top: " +
-	// 			detection.boundingBox.originY +
-	// 			"px;" +
-	// 			"width: " +
-	// 			(detection.boundingBox.width - 10) +
-	// 			"px;" +
-	// 			"height: " +
-	// 			detection.boundingBox.height +
-	// 			"px;"
-
-	// 		liveView.appendChild(highlighter)
-	// 		// liveView.appendChild(p)
-
-	// 		// Store drawn objects in memory so they are queued to delete at next call
-	// 		children.push(highlighter)
-	// 		// children.push(p)
-	// 		// for (let keypoint of detection.keypoints) {
-	// 		// 	const keypointEl = document.createElement("spam")
-	// 		// 	keypointEl.className = "key-point"
-	// 		// 	keypointEl.style.top = `${keypoint.y * video.offsetHeight - 3}px`
-	// 		// 	keypointEl.style.left = `${video.offsetWidth - keypoint.x * video.offsetWidth - 3}px`
-	// 		// 	liveView.appendChild(keypointEl)
-	// 		// 	children.push(keypointEl)
-	// 		// }
-	// 	}
-	// }
 </script>
 
 <div id="liveView">
@@ -197,18 +151,38 @@
 			<video id="remoteVideo" autoplay> </video>
 		</div>
 	</div>
+    <span id="nametag">Player 1</span>
 </div>
 
 <style>
+	#liveView {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+		position: absolute;
+		left: 0%;
+        transition-property: left;
+		transition-duration: 0.1s;
+		transition-timing-function: ease-in-out;
+	}
+
+    #nametag {
+        background: #2c2c2c;
+        color: #4883b5;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    }
+
 	#localVideo {
 		display: none;
 	}
 
 	#remoteVideoCanvas {
 		position: relative;
-		width: 20rem;
+		width: 10rem;
 		overflow: hidden;
-        -webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black 40%, transparent 50%);
+		-webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black 40%, transparent 50%);
 		mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black 40%, transparent 50%);
 	}
 
@@ -225,7 +199,7 @@
 		bottom: 0;
 		width: 0;
 		aspect-ratio: 1;
-		border: 1px solid red;
+		/* border: 1px solid red; */
 	}
 
 	#remoteVideo {

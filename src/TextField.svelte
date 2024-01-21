@@ -1,40 +1,51 @@
 <script>
-    import { createEventDispatcher } from 'svelte';
-    export let value = '', placeholder = '', disabled = false, autofocus = false, enterkeyhint = 'enter';
-    const dispatch = createEventDispatcher();
+	import { createEventDispatcher } from "svelte"
+	export let value = "",
+		placeholder = "",
+		disabled = false,
+		autofocus = false,
+		enterkeyhint = "enter"
+	const dispatch = createEventDispatcher()
 
-    const handleKeypress = e => {
-        if (e.charCode === 13) {
-            dispatch('submit', e);
-        }
-    }
+	const handleKeypress = (e) => {
+		if (e.charCode === 13) {
+			dispatch("submit", e)
+		}
+	}
 </script>
 
 <!-- svelte-ignore a11y-autofocus -->
-<input type="text" {placeholder} {disabled} {autofocus} {enterkeyhint} bind:value on:input|preventDefault on:keypress={handleKeypress}/>
+<input type="text" {placeholder} {disabled} {autofocus} {enterkeyhint} bind:value on:input|preventDefault on:keypress={handleKeypress} />
 
 <style>
-    input {
-        cursor: pointer;
-        outline: none;
-        font-size: 1.35em;
-        width: 8em;
-        color: #776e65;
-        padding: 0.5em 0.8em;
-        border-radius: 0.25em;
-        transition: all 0.2s ease-in-out;
-        border: 0.15em solid #eee4da;
-        margin: 0;
-        box-sizing: content-box;
-    }
+	input {
+		cursor: pointer;
+		outline: none;
+		font-size: 1.35em;
+		width: 8em;
+		color: #4883b5;
+		padding: 0.5em 0.8em;
+		border-radius: 0.25em;
+		transition: all 0.2s ease-in-out;
+		border: 0.15em solid #2a2a2a;
+		margin: 0;
+		box-sizing: content-box;
+		background-color: #505050;
+	}
 
-    input:hover:not(:disabled), input:focus:not(:disabled) {
-        border: 0.15em solid #ddd;
-    }
-    
-    @media (max-width: 640px) {
-        input {
-            font-size: 0.9em;
-        }
-    }
+	::placeholder {
+		color: #666;
+		opacity: 1; /* Firefox */
+	}
+
+	input:hover:not(:disabled),
+	input:focus:not(:disabled) {
+		border: 0.15em solid #333;
+	}
+
+	@media (max-width: 640px) {
+		input {
+			font-size: 0.9em;
+		}
+	}
 </style>

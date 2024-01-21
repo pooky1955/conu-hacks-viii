@@ -33,17 +33,6 @@ function convertHandToImpulse({x,y,z}){
 
 const DIAGONAL = {x:0.016,y:0.03,z:-0.015}
 const STRAIGHT = {x:0,y:0.025,z:+0.018}
-window.addEventListener('keydown',function(e){
-  if (e.key == 'a'){
-    direction = 1
-
-  } else {
-    direction = -1
-  }
-  // alert('keydown!')
-  ball.applyImpulse({x:0, y: 0, z:direction * 0.0001},1)
-
-})
 function updateOimoPhysics() {
   if (world == null) return;
   world.step();
@@ -121,6 +110,23 @@ class World {
     world.gravity = new OIMO.Vec3(0, -4, 0);
   }
 }
+
+function subtract(a,b){
+  return {x:a.x-b.x,y:a.y-b.y,z:a.z-b.z}
+}
+function scale({x,y,z},scale){
+  return {x:x*scale,y:y*scale,z:z*scale}
+  
+}
+
+function distance(p1,p2){
+  const x = p1.x-p2.x
+  const y = p1.y-p2.y
+  const z = p1.z-p2.z
+  return norm({x,y,z})
+
+}
+
 class HandTracker {
   constructor(){
     this.positions = []
@@ -128,21 +134,23 @@ class HandTracker {
 
   }
   update(){
-    if (!hand){this.positions=[];return;}
+    if (!hand){return;}
     this.positions.push(hand)
+    // alert('added one!')
     if (this.positions.length > this.maxLength){
       this.positions.shift()
     }
     this.velocity = {x:0,y:0,z:0}
+    this.ok = false
     if (this.positions.length === this.maxLength){
+        const lastPos= this.positions[this.positions.length-1]
+        const firstPos = this.positions[0]
+        const sub = subtract(lastPos,firstPos)
+        this.velocity = scale(sub,1/this.maxLength)
+    }
 
-    for (let key of ["x","y","z"]){
-      for (let position of this.positions){
-        this.velocity[key] += position[key]
-      }
-      this.velocity[key] /= this.positions.length
-    }
-    }
+    // now we check for position dispalcement
+
     
 
   }
@@ -195,6 +203,7 @@ class Sphere {
   }
 
   applyImpulse(impulse,time){
+    this.resetVelocity()
     this.duration = time
     this.impulse = impulse
   }
@@ -271,7 +280,7 @@ class Ground {
     });
   }
 }
-var paddle, content, ball, ground0, net
+var paddle, content, ball, ground0, net,pillar
 function newSetup() {
   mouse = new THREE.Vector2()
   ray = new THREE.Raycaster();
@@ -280,7 +289,8 @@ function newSetup() {
   scene.add(content)
   // const ground1 = new Box([400, 80, 400], [0, -40, 0])
   // const net = new Box([400, 40, 20], [0, 20, 0])
-  ball = new Sphere([0, 0, 150], 20,false);
+  ball = new Sphere([0, 100, 150], 20,false);
+  pillar = new Ground([80,150,80],[0,0,150])
   //add ground
   ground0 = new Ground([400,80,400],[0,-40,0])
   net = new Ground([400,40,10],[0,20,0])
@@ -307,7 +317,7 @@ function customLoop(){
   if (!!hand){
     const realImpulse = convertHandToImpulse(handtracker.velocity)
     console.log(norm(handtracker.velocity))
-    if (handTrackerTimeout === 0 && norm(handtracker.velocity) > 0.8){
+    if (handTrackerTimeout === 0 && norm(handtracker.velocity) > 0.0025){
       alert(`adding impulse! ${JSON.stringify(realImpulse)}`)
       ball.applyImpulse(realImpulse,1)
       handTrackerTimeout = 5000
@@ -363,7 +373,6 @@ function customLoop(){
 function loop() {
   updateOimoPhysics();
   customLoop()
-  handtracker = new HandTracker()
   renderer.render(scene, camera);
   // paddle.updatePosition([200*mouseX/window.innerWidth,200*mouseY/window.innerHeight,0])
   requestAnimationFrame(loop);

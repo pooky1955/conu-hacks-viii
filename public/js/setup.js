@@ -1,4 +1,3 @@
-
 // demolink();
 
 // three var
@@ -20,7 +19,6 @@ var fps = [0, 0, 0, 0];
 var ToRad = 0.0174532925199432957;
 var type = 1;
 var infos;
-
 
 function init() {
   var n = navigator.userAgent;
@@ -156,6 +154,15 @@ function init() {
 
   window.addEventListener("resize", onWindowResize, false);
 
+  window.addEventListener("keydown", function (e) {
+    if (e.key == "a") {
+      direction = 1;
+    } else {
+      direction = -1;
+    }
+    // alert('keydown!')
+    ball.applyImpulse({ x: 0, y: 0, z: direction * 0.0001 }, 1);
+  });
   // physics
 
   initOimoPhysics();
@@ -169,11 +176,10 @@ function initOimoPhysics() {
   // 3 : dynamic bounding volume tree
 
   world = new OIMO.World({ info: true, worldscale: 100 });
-  newSetup()
-//   populate(1);
+  newSetup();
+  //   populate(1);
   //setInterval(updateOimoPhysics, 1000/60);
 }
-
 
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;

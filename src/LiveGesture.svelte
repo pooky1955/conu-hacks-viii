@@ -16,6 +16,7 @@
 		const videoWidth = "480px"
 
 		navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((myStream) => {
+			console.log(myStream)
 			video.srcObject = myStream
 			video.addEventListener("loadeddata", predictWebcam)
 			webcamRunning = true

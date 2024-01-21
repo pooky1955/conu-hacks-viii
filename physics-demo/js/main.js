@@ -286,8 +286,8 @@ function customLoop(){
 
   }
 }
-init();
-loop();
+// init();
+// loop();
 function loop() {
   updateOimoPhysics();
   customLoop()

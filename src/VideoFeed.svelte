@@ -1,6 +1,6 @@
 <script>
 	import { Peer } from "peerjs"
-	import { socketStore } from "./store.js"
+	import { socketStore, roomStore } from "./store.js"
 	import { FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision"
 
 	const peer = new Peer($socketStore.userId, {
@@ -151,7 +151,7 @@
 			<video id="remoteVideo" autoplay> </video>
 		</div>
 	</div>
-	<span id="nametag">Player 1</span>
+	<span id="nametag">{($roomStore.players.find((player) => player.userId !== $socketStore.userId) || {}).username}</span>
 </div>
 
 <style>

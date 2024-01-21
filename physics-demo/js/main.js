@@ -240,7 +240,7 @@ let touchTimeout = 0
 let impulseTimeout = 0;
 function customLoop(){
   ball.check()
-  // console.log(ball.body.position.z)
+  // // console.log(ball.body.position.z)
   touchTimeout = Math.max(touchTimeout-1,0)
   impulseTimeout = Math.max(impulseTimeout-1,0)
     if (ball.body.position.y < -100) {

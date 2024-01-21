@@ -36,14 +36,14 @@
         $socketStore.emit('joinRoom', { id: roomCode }, (room) => {
             if (room.error) return
             $roomStore = room
-            console.log("roomStore", $roomStore)
+            // console.log("roomStore", $roomStore)
         });
     }
 
     const handleCreateClick = () => {
         handleUsernameSubmit()
         $socketStore.emit('createRoom', (room) => {
-            console.log('createRoom', room)
+            // console.log('createRoom', room)
             $roomStore = room
         });
     }

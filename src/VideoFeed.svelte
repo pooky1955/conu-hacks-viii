@@ -13,16 +13,16 @@
 	navigator.mediaDevices
 		.getUserMedia({ video: true, audio: false })
 		.then((myStream) => {
-			console.log("myStream", myStream)
+			// console.log("myStream", myStream)
 			document.getElementById("remoteVideo").srcObject = myStream
 			document.getElementById("remoteVideo").addEventListener("loadeddata", predictWebcam)
 
 			$socketStore.on("callPlayer", (args) => {
-				console.log("callPlayer", args)
+				// console.log("callPlayer", args)
 				setTimeout(() => {
 					const call = peer.call(args.id, myStream)
 					call.on("stream", (remoteStream) => {
-						console.log("remoteStream", remoteStream)
+						// console.log("remoteStream", remoteStream)
 						// Show stream in some <video> element.
 						document.getElementById("remoteVideo").srcObject = remoteStream
 						document.getElementById("remoteVideo").addEventListener("loadeddata", predictWebcam)
@@ -31,10 +31,10 @@
 			})
 
 			peer.on("call", (call) => {
-				console.log("receivingCall", call)
+				// console.log("receivingCall", call)
 				call.answer(myStream) // Answer the call with an A/V stream.
 				call.on("stream", (remoteStream) => {
-					console.log("remoteStream", remoteStream)
+					// console.log("remoteStream", remoteStream)
 					// Show stream in some <video> element.
 					document.getElementById("remoteVideo").srcObject = remoteStream
 					document.getElementById("remoteVideo").addEventListener("loadeddata", predictWebcam)
@@ -46,20 +46,20 @@
 		})
 
 	// $socketStore.on("callPlayer", (args) => {
-	//     console.log("callPlayer1", args);
+	//     // console.log("callPlayer1", args);
 	//     // setTimeout(() => {
 	//     //     peer.connect(args.id);
 	//     // }, 5000);
-	//     console.log("callPlayer2", args);
+	//     // console.log("callPlayer2", args);
 	//     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(
 	//         (stream) => {
-	//             console.log("myStream", stream);
+	//             // console.log("myStream", stream);
 	//             document.getElementById("localVideo").srcObject = stream;
 	//             setTimeout(() => {
-	//                 console.log("callPlayer3", args);
+	//                 // console.log("callPlayer3", args);
 	//                 const call = peer.call(args.id, stream);
 	//                 call.on("stream", (remoteStream) => {
-	//                     console.log("remoteStream", remoteStream);
+	//                     // console.log("remoteStream", remoteStream);
 	//                     // Show stream in some <video> element.
 	//                     document.getElementById("remoteVideo").srcObject = remoteStream;
 	//                 });
@@ -70,18 +70,18 @@
 
 	// });
 
-	// console.log("peer", peer);
+	// // console.log("peer", peer);
 
 	// peer.on("call", (call) => {
-	//     console.log("receivingCall", call);
+	//     // console.log("receivingCall", call);
 	//     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(
 	//         (stream) => {
-	//             console.log("myStream", stream);
+	//             // console.log("myStream", stream);
 	//             document.getElementById("localVideo").srcObject = stream;
 	//             setTimeout(() => {
 	//                 call.answer(stream); // Answer the call with an A/V stream.
 	//                 call.on("stream", (remoteStream) => {
-	//                     console.log("remoteStream", remoteStream);
+	//                     // console.log("remoteStream", remoteStream);
 	//                     // Show stream in some <video> element.
 	//                     document.getElementById("remoteVideo").srcObject = remoteStream;
 	//                 });
@@ -115,7 +115,7 @@
 		if (video.currentTime !== lastVideoTime) {
 			lastVideoTime = video.currentTime
 			const detections = faceDetector.detectForVideo(video, startTimeMs).detections
-			console.log(detections)
+			// // console.log(detections)
 
 			if (detections.length > 0) {
 				computeFaceBox(detections[0])
@@ -134,8 +134,8 @@
 		const relativeLeft2 = ((video.videoWidth - originX - width / 2) * 100) / video.videoWidth
 		const relativeTop = (originY * 100) / video.videoHeight
 		const relativeWidth = (width * 100) / video.videoWidth
-		console.log(video, width, video.videoWidth, relativeLeft, relativeTop, relativeWidth)
-		console.log("video ")
+		// // console.log(video, width, video.videoWidth, relativeLeft, relativeTop, relativeWidth)
+		// // console.log("video ")
 		document.getElementById("square").style = "left: " + relativeLeft + "%;" + "top: " + relativeTop + "%;" + "width: " + relativeWidth + "%;"
 		// const scale = 1/((relativeWidth+20)/100)
 		const scale = video.videoWidth / (width + 200)

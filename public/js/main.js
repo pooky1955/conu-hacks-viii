@@ -1,38 +1,39 @@
 let direction = 1;
 let timeout = 1;
-var ball,table;
-window.hand = undefined
+var ball, table;
+window.hand = undefined;
 /*
 X scale: 1 to 0 (left to right)
 Y scale: 0 to 1 (up to down)
 Z scale: -0.02 to -0.13 (back to front)
 */
-const XBound = [0,1]
-const YBound = [0,1]
-const ZBound = [-0.02,-0.13]
-const newXBound = [-0.016,0.016]
-const newYBound = [0,0.035]
-const newZBound = [0.014,0.019]
-function interpolate(value,min,max,min2,max2){
-  const ratio = (value-min) / (max - min)
-  const newNum = min2 + (max2-min2)*ratio
-  return newNum
+const XBound = [1, -1];
+const YBound = [-1, 1];
+const ZBound = [0, 0.08];
+const newXBound = [-0.016, 0.016];
+const newYBound = [0.01, 0.02];
+const newZBound = [-0.017, -0.019];
+function interpolate(value, min, max, min2, max2) {
+  const ratio = (value - min) / (max - min);
+  const newNum = (1 - ratio) * min2 + ratio * max2;
+  return newNum;
 }
-function norm(vector){
-  return Math.sqrt(vector.x**2 + vector.y**2 + vector.z**2)
-}
-
-function convertHandToImpulse({x,y,z}){
-  const newX = interpolate(x,...XBound,...newXBound)
-  const newY = interpolate(y,...YBound,...newYBound)
-  const newZ = interpolate(z,...ZBound,...newZBound)
-  return {x:newX,y:newY,z:newZ}
-
-
+function norm(vector) {
+  return Math.sqrt(vector.x ** 2 + vector.y ** 2 + vector.z ** 2);
 }
 
-const DIAGONAL = {x:0.016,y:0.03,z:-0.015}
-const STRAIGHT = {x:0,y:0.025,z:+0.018}
+function l1norm(vector) {
+  return Math.abs(vector.x) + Math.abs(vector.y) + Math.abs(vector.z);
+}
+function convertHandToImpulse({ x, y, z }) {
+  const newX = interpolate(x, ...XBound, ...newXBound);
+  const newY = interpolate(y, ...YBound, ...newYBound);
+  const newZ = interpolate(z, ...ZBound, ...newZBound);
+  return { x: newX, y: newY, z: newZ };
+}
+
+const DIAGONAL = { x: 0.016, y: 0.03, z: -0.015 };
+const STRAIGHT = { x: 0, y: 0.025, z: -0.018 };
 function updateOimoPhysics() {
   if (world == null) return;
   world.step();
@@ -111,48 +112,62 @@ class World {
   }
 }
 
-function subtract(a,b){
-  return {x:a.x-b.x,y:a.y-b.y,z:a.z-b.z}
+function subtract(a, b) {
+  return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
 }
-function scale({x,y,z},scale){
-  return {x:x*scale,y:y*scale,z:z*scale}
-  
+function scale({ x, y, z }, scale) {
+  return { x: x * scale, y: y * scale, z: z * scale };
 }
 
-function distance(p1,p2){
-  const x = p1.x-p2.x
-  const y = p1.y-p2.y
-  const z = p1.z-p2.z
-  return norm({x,y,z})
-
+function distance(p1, p2) {
+  const x = p1.x - p2.x;
+  const y = p1.y - p2.y;
+  const z = p1.z - p2.z;
+  return norm({ x, y, z });
 }
 
 class HandTracker {
-  constructor(){
-    this.positions = []
-    this.maxLength = 10
-
+  constructor() {
+    this.positions = [];
+    this.maxLength = 10;
+    this.acceleration={x:0,y:0,z:0}
   }
-  update(){
-    if (!hand){return;}
-    this.positions.push(hand)
+
+  calculateAcceleration(){
+    // if (this.positions.length < 4){
+    //   this.acceleration = {x:0,y:0,z:0}
+    // } else {
+    //   this.velocities = []
+    //   for (let i = 1; i < this.positions.length; i++){
+    //     this.velocities.push(subtract(this.positions[i],this.positions[i-1]))
+    //   }
+
+    //   this.acceleration = subtract(this.velocities[this.velocities.length-1],this.velocities[0])
+    // }
+  }
+  update() {
+    // // console.log(hand);
+    if (!hand) {
+      return;
+    }
+    this.positions.push(hand);
+    this.calculateAcceleration()
     // alert('added one!')
-    if (this.positions.length > this.maxLength){
-      this.positions.shift()
+    if (this.positions.length > this.maxLength) {
+      this.positions.shift();
     }
-    this.velocity = {x:0,y:0,z:0}
-    this.ok = false
-    if (this.positions.length === this.maxLength){
-        const lastPos= this.positions[this.positions.length-1]
-        const firstPos = this.positions[0]
-        const sub = subtract(lastPos,firstPos)
-        this.velocity = scale(sub,1/this.maxLength)
-    }
+    this.velocity = { x: 0, y: 0, z: 0 };
+    this.ok = false;
+    const lastPos = this.positions[this.positions.length - 1];
+    const firstPos = this.positions[0];
+    const sub = subtract(lastPos, firstPos);
+    this.velocity = sub;
 
     // now we check for position dispalcement
-
-    
-
+  }
+  clear() {
+    this.positions = [];
+    this.velocity = { x: 0, y: 0, z: 0 };
   }
 }
 class Box {
@@ -192,44 +207,44 @@ class Box {
 }
 
 class Sphere {
-  constructor(position, radius,kinematic) {
+  constructor(position, radius, kinematic) {
     this.size = [radius / 2, radius / 2, radius / 2];
     this.radius = radius;
     this.position = position;
     this.rotation = [0, 0, 0];
-    this.kinematic = kinematic
+    this.kinematic = kinematic;
     this.static = false;
     // this.setup()
   }
 
-  applyImpulse(impulse,time){
-    this.resetVelocity()
-    this.duration = time
-    this.impulse = impulse
-  }
-
-  setVelocity({x,y,z}){
-    this.body.linearVelocity.x = x
-    this.body.linearVelocity.y = y
-    this.body.linearVelocity.z = z
-
-  }
-  reset(){
-      ball.body.resetPosition(-180, 10, 180);
-  }
-
-  resetVelocity(){
-    this.body.linearVelocity.x = 0
-    this.body.linearVelocity.y = 0
-    this.body.linearVelocity.z = 0
-  }
-
-  check(){
-    if (this.duration>0){
-      this.body.applyImpulse(this.body.position,this.impulse)
+  applyImpulse(impulse, time,reset=false) {
+    if (reset){
+      this.resetVelocity();
     }
-    this.duration = Math.max(this.duration-1,0)
+    this.duration = time;
+    this.impulse = impulse;
+  }
 
+  setVelocity({ x, y, z }) {
+    this.body.linearVelocity.x = x;
+    this.body.linearVelocity.y = y;
+    this.body.linearVelocity.z = z;
+  }
+  reset() {
+    ball.body.resetPosition(-180, 10, 180);
+  }
+
+  resetVelocity() {
+    this.body.linearVelocity.x = 0;
+    this.body.linearVelocity.y = 0;
+    this.body.linearVelocity.z = 0;
+  }
+
+  check() {
+    if (this.duration > 0) {
+      this.body.applyImpulse(this.body.position, this.impulse);
+    }
+    this.duration = Math.max(this.duration - 1, 0);
   }
   setup(world) {
     var mesh = new THREE.Mesh(geos.sphere, mats.sph);
@@ -250,7 +265,7 @@ class Sphere {
       move: true,
       world: world,
       config: config,
-      kinematic : this.kinematic
+      kinematic: this.kinematic,
     };
     this.body = world.add(this.config);
     // this.body = world.add({type:'sphere', size:[this.radius*0.5], pos:[...this.position], move:true, world:world});
@@ -269,9 +284,9 @@ class Sphere {
 }
 
 class Ground {
-  constructor(size,position) {
-    this.position = position
-    this.size = size
+  constructor(size, position) {
+    this.position = position;
+    this.size = size;
     this.mesh = addStaticBox(size, position, [0, 0, 0]);
     this.body = world.add({
       size: size,
@@ -280,102 +295,111 @@ class Ground {
     });
   }
 }
-var paddle, content, ball, ground0, net,pillar
+var paddle, content, ball, ground0, net, pillar;
 function newSetup() {
-  mouse = new THREE.Vector2()
+  mouse = new THREE.Vector2();
   ray = new THREE.Raycaster();
   const universe = new World();
   content = new THREE.Object3D();
-  scene.add(content)
+  scene.add(content);
   // const ground1 = new Box([400, 80, 400], [0, -40, 0])
   // const net = new Box([400, 40, 20], [0, 20, 0])
-  ball = new Sphere([0, 100, 150], 20,false);
-  pillar = new Ground([80,150,80],[0,0,150])
+  ball = new Sphere([0, 100, 150], 20, false);
+  pillar = new Ground([80, 150, 80], [0, 0, 150]);
   //add ground
-  ground0 = new Ground([400,80,400],[0,-40,0])
-  net = new Ground([400,40,10],[0,20,0])
-  // const paddle2 = 
+  ground0 = new Ground([400, 80, 400], [0, -40, 0]);
+  net = new Ground([400, 40, 10], [0, 20, 0]);
+  // const paddle2 =
   // paddle = new THREE.Object3D()
   // scene.add(paddle)
 
   const objects = [ball];
   for (const object of objects) {
     universe.add(object);
-    content.add(object.mesh)
+    content.add(object.mesh);
   }
 }
 let currentCounter = 0;
 let currentSign = 0;
-let touchTimeout = 0
+let touchTimeout = 0;
 let impulseTimeout = 0;
 let handTrackerTimeout = 0;
-let handtracker = new HandTracker()
-function customLoop(){
-  handTrackerTimeout = Math.max(handTrackerTimeout-1,0)
-  handtracker.update()
-  ball.check()
-  if (!!hand){
-    const realImpulse = convertHandToImpulse(handtracker.velocity)
-    console.log(norm(handtracker.velocity))
-    if (handTrackerTimeout === 0 && norm(handtracker.velocity) > 0.0025){
-      alert(`adding impulse! ${JSON.stringify(realImpulse)}`)
-      ball.applyImpulse(realImpulse,1)
-      handTrackerTimeout = 5000
+let handtracker = new HandTracker();
+function customLoop() {
+  handTrackerTimeout = Math.max(handTrackerTimeout - 1, 0);
+  handtracker.update();
+  ball.check();
+  if (!!hand) {
+    if (true) {
+      const realImpulse = convertHandToImpulse(handtracker.velocity);
+      // console.info(l1norm(handtracker.velocity));
+      // console.info(handtracker.velocity)
+      if (handTrackerTimeout === 0 && l1norm(handtracker.velocity) > 0.5) {
+        if (realImpulse.z < 0) {
+          // // console.log(handtracker.velocity);
+          // // console.log(realImpulse);
+          // alert(
+          //   `adding impulse! ${JSON.stringify(
+          //     realImpulse
+          //   )} using acceleration ${JSON.stringify(handtracker.velocity)}`
+          // );
+          ball.applyImpulse(realImpulse, 1);
+          // debugger
+          handtracker.clear();
+          handTrackerTimeout = 50;
+        }
+      }
     }
   }
 
-  // console.log(ball.body.position.z)
-  touchTimeout = Math.max(touchTimeout-1,0)
-  impulseTimeout = Math.max(impulseTimeout-1,0)
-    if (ball.body.position.y < -100) {
-      ball.body.resetPosition(0, 200, 0);
-    }
-  if (world.getContact(net.body,ball.body)){
+  // // console.log(ball.body.position.z)
+  touchTimeout = Math.max(touchTimeout - 1, 0);
+  impulseTimeout = Math.max(impulseTimeout - 1, 0);
+  if (ball.body.position.y < -10) {
+    ball.body.resetPosition(0, 100, 180);
+  }
+  if (world.getContact(net.body, ball.body)) {
     // alert('net!')
   }
-  const SIZE = 1.9
-  const STRENGTH = 0.001
-  if (impulseTimeout === 0){
-
-  // if (ball.body.position.z < -SIZE){
-  //   // ball.applyImpulse({x:0,y:STRENGTH/16,z:STRENGTH},1)
-  //   ball.resetVelocity()
-  //   ball.applyImpulse({x:0,y:0.025,z:+0.018},1)
-  //   impulseTimeout = 50
-
-  //   // alert('deep end! (1)')
-  // }
-  // if (ball.body.position.z > SIZE){
-  //   // ball.applyImpulse({x:0,y:STRENGTH/16,z:-STRENGTH},1)
-  //   // alert('deep end! (2)')
-  //   ball.resetVelocity()
-  //   ball.applyImpulse({x:0,y:0.03,z:-0.0165},1)
-  //   impulseTimeout = 50
-  // }
+  const SIZE = 1.9;
+  const STRENGTH = 0.001;
+  if (impulseTimeout === 0) {
+    // if (ball.body.position.z < -SIZE){
+    //   // ball.applyImpulse({x:0,y:STRENGTH/16,z:STRENGTH},1)
+    //   ball.resetVelocity()
+    //   ball.applyImpulse({x:0,y:0.025,z:+0.018},1)
+    //   impulseTimeout = 50
+    //   // alert('deep end! (1)')
+    // }
+    // if (ball.body.position.z > SIZE){
+    //   // ball.applyImpulse({x:0,y:STRENGTH/16,z:-STRENGTH},1)
+    //   // alert('deep end! (2)')
+    //   ball.resetVelocity()
+    //   ball.applyImpulse({x:0,y:0.03,z:-0.0165},1)
+    //   impulseTimeout = 50
+    // }
   }
-  if (touchTimeout === 0 && world.getContact(ball.body,ground0.body)){
-    if (Math.sign(ball.body.position.y) < 0){
-      if (currentSign === -1){
+  if (touchTimeout === 0 && world.getContact(ball.body, ground0.body)) {
+    if (Math.sign(ball.body.position.y) < 0) {
+      if (currentSign === -1) {
         // alert('double bounce')
       }
-      currentSign = -1
-    } else  {
-      if (currentSign === 1){
+      currentSign = -1;
+    } else {
+      if (currentSign === 1) {
         // alert('double bounce')
       }
-      currentSign = 1
-
+      currentSign = 1;
     }
-    touchTimeout = 50
-
+    touchTimeout = 50;
   }
 }
 function loop() {
   updateOimoPhysics();
-  customLoop()
+  customLoop();
   renderer.render(scene, camera);
   // paddle.updatePosition([200*mouseX/window.innerWidth,200*mouseY/window.innerHeight,0])
   requestAnimationFrame(loop);
 }
-window.init = init
-window.loop = loop
+window.init = init;
+window.loop = loop;

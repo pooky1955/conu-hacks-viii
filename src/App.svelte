@@ -21,19 +21,19 @@
 		}
 
 		$socketStore.on("session", ({ sessionId, userId }) => {
-			console.log("session", sessionId, userId)
+			// console.log("session", sessionId, userId)
 			$socketStore.auth = { sessionId };
 			$sessionStore = sessionId;
 			$socketStore.userId = userId;
 			$socketStore.emit('getUser', { id: $socketStore.userId}, (user) => {
-				console.log("user", user)	
+				// console.log("user", user)	
 				$userStore = user
-				console.log("userStore", $userStore)
+				// console.log("userStore", $userStore)
 			});
 			$socketStore.emit('getRoomByPlayer', { id: $socketStore.userId }, (room) => {
-				console.log("room", room)	
+				// console.log("room", room)	
 				$roomStore = room
-				console.log("roomStore", $roomStore)
+				// console.log("roomStore", $roomStore)
 			});
 		});
 
@@ -41,7 +41,7 @@
 	});
 
 	$socketStore.on('updateRoom', (room) => {
-		console.log("updateRoom", room)
+		// console.log("updateRoom", room)
 		$roomStore = room
 
 		if ($roomStore.players == 2) {

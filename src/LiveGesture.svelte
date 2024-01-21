@@ -110,7 +110,7 @@ async function predictWebcam() {
   webcamElement.style.width = videoWidth;
 
   if (results.landmarks) {
-    // console.log(results.landmarks)
+    // // console.log(results.landmarks)
     for (const landmarks of results.landmarks) {
       drawingUtils.drawConnectors(
         landmarks,
@@ -150,6 +150,8 @@ async function predictWebcam() {
     average.x /= results.landmarks[0].length
     average.y /= results.landmarks[0].length
     average.z /= results.landmarks[0].length
+    average.z *= 10
+    average.z += 1
     window.hand = average
 
     // alert(`average is ${JSON.stringify(average)}`)

@@ -1417,7 +1417,7 @@
 	        det = a00 * b01 + a01 * b11 + a02 * b21;
 
 	        if ( det === 0 ) {
-	            console.log( "can't invert matrix, determinant is 0");
+	            // // console.log( "can't invert matrix, determinant is 0");
 	            return this.identity();
 	        }
 

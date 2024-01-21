@@ -14,8 +14,8 @@
 		.getUserMedia({ video: true, audio: false })
 		.then((myStream) => {
 			// console.log("myStream", myStream)
-			document.getElementById("remoteVideo").srcObject = myStream
-			document.getElementById("remoteVideo").addEventListener("loadeddata", predictWebcam)
+			// document.getElementById("remoteVideo").srcObject = myStream
+			// document.getElementById("remoteVideo").addEventListener("loadeddata", predictWebcam)
 
 			$socketStore.on("callPlayer", (args) => {
 				// console.log("callPlayer", args)
@@ -151,28 +151,28 @@
 			<video id="remoteVideo" autoplay> </video>
 		</div>
 	</div>
-    <span id="nametag">Player 1</span>
+	<span id="nametag">Player 1</span>
 </div>
 
 <style>
 	#liveView {
-        display: none;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+		display: none;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
 		position: absolute;
 		left: 0%;
-        transition-property: left;
+		transition-property: left;
 		transition-duration: 0.1s;
 		transition-timing-function: ease-in-out;
 	}
 
-    #nametag {
-        background: #2c2c2c;
-        color: #4883b5;
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-    }
+	#nametag {
+		background: #2c2c2c;
+		color: #4883b5;
+		padding: 0.5rem;
+		border-radius: 0.5rem;
+	}
 
 	#localVideo {
 		display: none;

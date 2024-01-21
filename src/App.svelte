@@ -66,7 +66,7 @@
 		{#if !$roomStore || Object.keys($roomStore).length == 0}
 			<Join />
 		{:else}
-			<PlayerList players={$roomStore.players} teams={$roomStore.teams} turn={$roomStore.turn}/>
+			<!-- <PlayerList players={$roomStore.players} teams={$roomStore.teams} turn={$roomStore.turn}/> -->
 			<Table/>
 			<!-- <Board board={$roomStore.board} width={$roomStore.boardWidth} height={$roomStore.boardHeight}/> -->
 			<EndDialog />

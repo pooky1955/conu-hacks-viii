@@ -18,9 +18,9 @@
 
 <style>
 	.status {
-		color: #4883b5;
+		color: #9cd2ff;
 		font-size: 2em;
-		font-weight: 700;
+		font-weight: 500;
 		margin: 0;
 		animation: breathing 5s infinite ease-in-out;
 	}

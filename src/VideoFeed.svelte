@@ -89,6 +89,7 @@
 		const scale = video.videoWidth / (width + 300)
 		document.getElementById("remoteVideoFilter").style =
 			"transform: scale(" + scale + ") translate(" + (50 - relativeLeft2) + "%, " + (50 - relativeTop - 10) + "%);"
+		document.getElementById("liveView").style = "display: flex; left: " + relativeLeft + "%;"
 	}
 </script>
 
@@ -100,9 +101,29 @@
 			<video id="remoteVideo" autoplay> </video>
 		</div>
 	</div>
+    <span id="nametag">Player 1</span>
 </div>
 
 <style>
+	#liveView {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+		position: absolute;
+		left: 0%;
+        transition-property: left;
+		transition-duration: 0.1s;
+		transition-timing-function: ease-in-out;
+	}
+
+    #nametag {
+        background: #2c2c2c;
+        color: #4883b5;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    }
+
 	#localVideo {
 		display: none;
 	}

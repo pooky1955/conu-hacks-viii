@@ -18,7 +18,7 @@
 		navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then((myStream) => {
 			video.srcObject = myStream
 			video.addEventListener("loadeddata", predictWebcam)
-      webcamRunning = true
+			webcamRunning = true
 		})
 
 		// Before we can use HandLandmarker class we must wait for it to finish
@@ -177,31 +177,7 @@
 		-moz-transform: rotateY(180deg);
 	}
 
-	.removed {
-		display: none;
-	}
-
-	.invisible {
-		opacity: 0.2;
-	}
-
-	.note {
-		font-style: italic;
-		font-size: 130%;
-	}
-
-	.videoView,
-	.detectOnClick,
-	.blend-shapes {
-		/* position: relative;
-		float: left;
-		width: 48%;
-		margin: 2% 1%;
-		cursor: pointer; */
-	}
-
-	.videoView p,
-	.detectOnClick p {
+	.videoView p {
 		position: absolute;
 		padding: 5px;
 		background-color: #007f8b;
@@ -212,23 +188,9 @@
 		margin: 0;
 	}
 
-	.highlighter {
-		background: rgba(0, 255, 0, 0.25);
-		border: 1px dashed #fff;
-		z-index: 1;
-		position: absolute;
-	}
-
-	.canvas {
-		z-index: 1;
-		position: absolute;
-		pointer-events: none;
-	}
-
 	.output_canvas {
 		transform: rotateY(180deg);
 		-webkit-transform: rotateY(180deg);
 		-moz-transform: rotateY(180deg);
 	}
-
 </style>

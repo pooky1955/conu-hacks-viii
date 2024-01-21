@@ -2,6 +2,34 @@ let direction = 1;
 let timeout = 1;
 var ball,table;
 window.hand = undefined
+/*
+X scale: 1 to 0 (left to right)
+Y scale: 0 to 1 (up to down)
+Z scale: -0.02 to -0.13 (back to front)
+*/
+const XBound = [0,1]
+const YBound = [0,1]
+const ZBound = [-0.02,-0.13]
+const newXBound = [-0.016,0.016]
+const newYBound = [0,0.035]
+const newZBound = [0.014,0.019]
+function interpolate(value,min,max,min2,max2){
+  const ratio = (value-min) / (max - min)
+  const newNum = min2 + (max2-min2)*ratio
+  return newNum
+}
+function norm(vector){
+  return Math.sqrt(vector.x**2 + vector.y**2 + vector.z**2)
+}
+
+function convertHandToImpulse({x,y,z}){
+  const newX = interpolate(x,...XBound,...newXBound)
+  const newY = interpolate(y,...YBound,...newYBound)
+  const newZ = interpolate(z,...ZBound,...newZBound)
+  return {x:newX,y:newY,z:newZ}
+
+
+}
 
 const DIAGONAL = {x:0.016,y:0.03,z:-0.015}
 const STRAIGHT = {x:0,y:0.025,z:+0.018}
@@ -96,21 +124,24 @@ class World {
 class HandTracker {
   constructor(){
     this.positions = []
-    this.maxLength = 5
+    this.maxLength = 10
 
   }
   update(){
-    if (!hand){return}
+    if (!hand){this.positions=[];return;}
     this.positions.push(hand)
     if (this.positions.length > this.maxLength){
       this.positions.shift()
     }
     this.velocity = {x:0,y:0,z:0}
+    if (this.positions.length === this.maxLength){
+
     for (let key of ["x","y","z"]){
       for (let position of this.positions){
         this.velocity[key] += position[key]
       }
       this.velocity[key] /= this.positions.length
+    }
     }
     
 
@@ -267,12 +298,20 @@ let currentCounter = 0;
 let currentSign = 0;
 let touchTimeout = 0
 let impulseTimeout = 0;
+let handTrackerTimeout = 0;
 let handtracker = new HandTracker()
 function customLoop(){
+  handTrackerTimeout = Math.max(handTrackerTimeout-1,0)
   handtracker.update()
   ball.check()
   if (!!hand){
-  ball.setVelocity(handtracker.velocity)
+    const realImpulse = convertHandToImpulse(handtracker.velocity)
+    console.log(norm(handtracker.velocity))
+    if (handTrackerTimeout === 0 && norm(handtracker.velocity) > 0.8){
+      alert(`adding impulse! ${JSON.stringify(realImpulse)}`)
+      ball.applyImpulse(realImpulse,1)
+      handTrackerTimeout = 5000
+    }
   }
 
   // console.log(ball.body.position.z)

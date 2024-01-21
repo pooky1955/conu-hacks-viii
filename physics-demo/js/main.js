@@ -1,6 +1,19 @@
+let direction = 1;
+let timeout = 1;
+var ball,table;
+window.addEventListener('keydown',function(e){
+  if (e.key == 'a'){
+    direction = 1
+
+  } else {
+    direction = -1
+  }
+  // alert('keydown!')
+  ball.applyImpulse({x:0, y: 0, z:direction * 0.0001},1)
+
+})
 function updateOimoPhysics() {
   if (world == null) return;
-
   world.step();
 
   var x,
@@ -24,12 +37,6 @@ function updateOimoPhysics() {
       if (mesh.material.name === "scyl") mesh.material = mats.cyl;
 
       // reset position
-      if (mesh.position.y < -100) {
-        x = -100 + Math.random() * 200;
-        z = -100 + Math.random() * 200;
-        y = 100 + Math.random() * 1000;
-        body.resetPosition(x, y, z);
-      }
     } else {
       if (mesh.material.name === "box") mesh.material = mats.sbox;
       if (mesh.material.name === "sph") mesh.material = mats.ssph;
@@ -45,7 +52,7 @@ function gravity(g) {
   world.gravity = new OIMO.Vec3(0, nG, 0);
 }
 
-const config = [0.2, 1, 3.5, 1, 0xffffffff];
+const config = [2, 1, 3, 1, 0xffffffff];
 //----------------------------------
 //  OIMO PHYSICS
 //----------------------------------
@@ -120,13 +127,31 @@ class Box {
 }
 
 class Sphere {
-  constructor(position, radius) {
+  constructor(position, radius,kinematic) {
     this.size = [radius / 2, radius / 2, radius / 2];
     this.radius = radius;
     this.position = position;
     this.rotation = [0, 0, 0];
+    this.kinematic = kinematic
     this.static = false;
     // this.setup()
+  }
+
+  applyImpulse(impulse,time){
+    this.duration = time
+    this.impulse = impulse
+  }
+
+  reset(){
+      ball.body.resetPosition(0, 10, 180);
+  }
+
+  check(){
+    if (this.duration>0){
+      this.body.applyImpulse(this.body.position,this.impulse)
+    }
+    this.duration = Math.max(this.duration-1,0)
+
   }
   setup(world) {
     var mesh = new THREE.Mesh(geos.sphere, mats.sph);
@@ -147,7 +172,7 @@ class Sphere {
       move: true,
       world: world,
       config: config,
-      // kinematic : true
+      kinematic : this.kinematic
     };
     this.body = world.add(this.config);
     // this.body = world.add({type:'sphere', size:[this.radius*0.5], pos:[...this.position], move:true, world:world});
@@ -177,41 +202,85 @@ class Ground {
     });
   }
 }
-var paddle
+var paddle, content, ball, ground0, net
 function newSetup() {
+  mouse = new THREE.Vector2()
+  ray = new THREE.Raycaster();
   const universe = new World();
+  content = new THREE.Object3D();
+  scene.add(content)
   // const ground1 = new Box([400, 80, 400], [0, -40, 0])
   // const net = new Box([400, 40, 20], [0, 20, 0])
-  const ball = new Sphere([0, 200, 0], 20);
+  ball = new Sphere([0, 0, 150], 20,false);
   //add ground
-  const ground0 = new Ground([400,80,400],[0,-40,0])
-  const net = new Ground([400,40,10],[0,20,0])
-  paddle = new Sphere([0,200,200],30)
-  const objects = [ball,paddle];
+  ground0 = new Ground([400,80,400],[0,-40,0])
+  net = new Ground([400,40,10],[0,20,0])
+  // const paddle2 = 
+  // paddle = new THREE.Object3D()
+  // scene.add(paddle)
+
+  const objects = [ball];
   for (const object of objects) {
     universe.add(object);
+    content.add(object.mesh)
   }
 }
+let currentCounter = 0;
+let currentSign = 0;
+let touchTimeout = 0
+let impulseTimeout = 0;
+function customLoop(){
+  ball.check()
+  // console.log(ball.body.position.z)
+  touchTimeout = Math.max(touchTimeout-1,0)
+  impulseTimeout = Math.max(impulseTimeout-1,0)
+    if (ball.body.position.y < -100) {
+      ball.body.resetPosition(0, 200, 0);
+    }
+  if (world.getContact(net.body,ball.body)){
+    // alert('net!')
+  }
+  const SIZE = 1.9
+  const STRENGTH = 0.001
+  if (impulseTimeout === 0){
 
-let ray, mouse;
-let mouseX = 0;
-let mouseY = 0;
+  if (ball.body.position.z < -SIZE){
+    // ball.applyImpulse({x:0,y:STRENGTH/16,z:STRENGTH},1)
+    ball.applyImpulse({x:0,y:0.03,z:+0.0165},1)
+    impulseTimeout = 50
+
+    // alert('deep end! (1)')
+  }
+  if (ball.body.position.z > SIZE){
+    // ball.applyImpulse({x:0,y:STRENGTH/16,z:-STRENGTH},1)
+    // alert('deep end! (2)')
+    ball.applyImpulse({x:0,y:0.03,z:-0.0165},1)
+    impulseTimeout = 50
+  }
+  }
+  if (touchTimeout === 0 && world.getContact(ball.body,ground0.body)){
+    if (Math.sign(ball.body.position.y) < 0){
+      if (currentSign === -1){
+        // alert('double bounce')
+      }
+      currentSign = -1
+    } else  {
+      if (currentSign === 1){
+        // alert('double bounce')
+      }
+      currentSign = 1
+
+    }
+    touchTimeout = 50
+
+  }
+}
 init();
 loop();
-        window.addEventListener( 'mousemove', rayTest, false);
 function loop() {
   updateOimoPhysics();
+  customLoop()
   renderer.render(scene, camera);
-  paddle.updatePosition([200*mouseX/window.innerWidth,200*mouseY/window.innerHeight,0])
+  // paddle.updatePosition([200*mouseX/window.innerWidth,200*mouseY/window.innerHeight,0])
   requestAnimationFrame(loop);
-}
-function rayTest (e) {
-    mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
-    mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
-
-    ray.setFromCamera( mouse, camera );
-    var intersects = ray.intersectObjects( content.children, true );
-    if ( intersects.length) {
-        paddle.position.copy( intersects[0].point.add(new THREE.Vector3( 0, 20, 0 )) );
-    }
 }

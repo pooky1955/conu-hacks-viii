@@ -102,7 +102,6 @@ async function predictWebcam() {
 
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-  console.log(canvasCtx) 
   const drawingUtils = new DrawingUtils(canvasCtx);
 
   canvasElement.style.height = videoHeight;

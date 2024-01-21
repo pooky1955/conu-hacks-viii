@@ -1,13 +1,18 @@
-    <!-- <canvas id="canvas"></canvas>
-<div id='interface'>
-    <input type="button" value="sphere" onClick=populate(1)>
-    <input type="button" value="box" onClick=populate(2)>
-    <input type="button" value="cylinder" onClick=populate(3)>
-    <input type="button" value="mix" onClick=populate(4)>
-    <input type="number" name="quantity" min="10" max="2000" value="400"  id='MaxNumber'>
-    <input type="submit" onClick=populate()>
-    <input type="number" name="gravity" min="-20" max="20" value="-10" id='gravity' onChange=gravity() >
+<script>
+  import { onMount } from "svelte";
+
+
+    onMount(() => {
+        alert('mounted canvas!')
+        init()
+        loop()
+
+    })    
+
+
+</script>
+<div>
+
+<canvas id="canvas"></canvas>
+
 </div>
-<div id='info'></div>
-<a id="ribbon" href="https://github.com/lo-th/Oimo.js"></a> -->
-<script src="js/main.js"></script>

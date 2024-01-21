@@ -111,6 +111,7 @@ async function predictWebcam() {
   webcamElement.style.width = videoWidth;
 
   if (results.landmarks) {
+    // console.log(results.landmarks)
     for (const landmarks of results.landmarks) {
       drawingUtils.drawConnectors(
         landmarks,
@@ -128,6 +129,8 @@ async function predictWebcam() {
   }
   canvasCtx.restore();
   if (results.gestures.length > 0) {
+    // alert("found you!")
+    // alert(JSON.stringify(results))
     gestureOutput.style.display = "block";
     gestureOutput.style.width = videoWidth;
     const categoryName = results.gestures[0][0].categoryName;
@@ -136,6 +139,27 @@ async function predictWebcam() {
     ).toFixed(2);
     const handedness = results.handednesses[0][0].displayName;
     gestureOutput.innerText = `GestureRecognizer: ${categoryName}\n Confidence: ${categoryScore} %\n Handedness: ${handedness}`;
+    // debugger
+    let average = {x:0,y:0,z:0}
+    for (let landmark of results.landmarks[0]){
+      const {x,y,z} = landmark
+      // alert(landmark)
+      average.x += x
+      average.y += y
+      average.z += z
+    }
+    average.x /= results.landmarks[0].length
+    average.y /= results.landmarks[0].length
+    average.z /= results.landmarks[0].length
+    window.hand = average
+
+    // alert(`average is ${JSON.stringify(average)}`)
+      drawingUtils.drawLandmarks([average], {
+        color: "#0000FF",
+        lineWidth: 2
+      });
+      gestureOutput.innerHTML = `Position: ${JSON.stringify(average)}`
+    
   } else {
     gestureOutput.style.display = "none";
   }

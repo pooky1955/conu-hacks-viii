@@ -1,309 +1,23 @@
-// demolink();
+let direction = 1;
+let timeout = 1;
+var ball,table;
+window.hand = undefined
 
-// three var
-var camera, scene, light, renderer, canvas, controls;
-var meshs = [];
-var grounds = [];
+const DIAGONAL = {x:0.016,y:0.03,z:-0.015}
+const STRAIGHT = {x:0,y:0.025,z:+0.018}
+window.addEventListener('keydown',function(e){
+  if (e.key == 'a'){
+    direction = 1
 
-var isMobile = false;
-var antialias = true;
-
-var geos = {};
-var mats = {};
-
-//oimo var
-var world = null;
-var bodys = [];
-
-var fps = [0, 0, 0, 0];
-var ToRad = 0.0174532925199432957;
-var type = 1;
-var infos;
-
-init();
-loop();
-
-function init() {
-  var n = navigator.userAgent;
-  if (
-    n.match(/Android/i) ||
-    n.match(/webOS/i) ||
-    n.match(/iPhone/i) ||
-    n.match(/iPad/i) ||
-    n.match(/iPod/i) ||
-    n.match(/BlackBerry/i) ||
-    n.match(/Windows Phone/i)
-  ) {
-    isMobile = true;
-    antialias = false;
-    document.getElementById("MaxNumber").value = 200;
+  } else {
+    direction = -1
   }
+  // alert('keydown!')
+  ball.applyImpulse({x:0, y: 0, z:direction * 0.0001},1)
 
-  infos = document.getElementById("info");
-
-  canvas = document.getElementById("canvas");
-
-  camera = new THREE.PerspectiveCamera(
-    60,
-    window.innerWidth / window.innerHeight,
-    1,
-    5000
-  );
-  camera.position.set(0, 160, 400);
-
-  controls = new THREE.OrbitControls(camera, canvas);
-  controls.target.set(0, 20, 0);
-  controls.update();
-
-  scene = new THREE.Scene();
-
-  renderer = new THREE.WebGLRenderer({
-    canvas: canvas,
-    precision: "mediump",
-    antialias: antialias,
-  });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-
-  var materialType = "MeshBasicMaterial";
-
-  if (!isMobile) {
-    scene.add(new THREE.AmbientLight(0x3d4143));
-    light = new THREE.DirectionalLight(0xffffff, 1.4);
-    light.position.set(300, 1000, 500);
-    light.target.position.set(0, 0, 0);
-    light.castShadow = true;
-
-    var d = 300;
-    light.shadow.camera = new THREE.OrthographicCamera(-d, d, d, -d, 500, 1600);
-    light.shadow.bias = 0.0001;
-    light.shadow.mapSize.width = light.shadow.mapSize.height = 1024;
-
-    scene.add(light);
-
-    materialType = "MeshPhongMaterial";
-
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap; //THREE.BasicShadowMap;
-  }
-
-  // background
-  var buffgeoBack = new THREE.BufferGeometry();
-  buffgeoBack.fromGeometry(new THREE.IcosahedronGeometry(3000, 2));
-  var back = new THREE.Mesh(
-    buffgeoBack,
-    new THREE.MeshBasicMaterial({
-      map: gradTexture([
-        [0.75, 0.6, 0.4, 0.25],
-        ["#1B1D1E", "#3D4143", "#72797D", "#b0babf"],
-      ]),
-      side: THREE.BackSide,
-      depthWrite: false,
-      fog: false,
-    })
-  );
-  //back.geometry.applyMatrix(new THREE.Matrix4().makeRotationZ(15*ToRad));
-  scene.add(back);
-
-  // geometrys
-  geos["sphere"] = new THREE.BufferGeometry().fromGeometry(
-    new THREE.SphereGeometry(1, 16, 10)
-  );
-  geos["box"] = new THREE.BufferGeometry().fromGeometry(
-    new THREE.BoxGeometry(1, 1, 1)
-  );
-  geos["cylinder"] = new THREE.BufferGeometry().fromGeometry(
-    new THREE.CylinderGeometry(1, 1, 1)
-  );
-
-  // materials
-  mats["sph"] = new THREE[materialType]({
-    shininess: 10,
-    map: basicTexture(0),
-    name: "sph",
-  });
-  mats["box"] = new THREE[materialType]({
-    shininess: 10,
-    map: basicTexture(2),
-    name: "box",
-  });
-  mats["cyl"] = new THREE[materialType]({
-    shininess: 10,
-    map: basicTexture(4),
-    name: "cyl",
-  });
-  mats["ssph"] = new THREE[materialType]({
-    shininess: 10,
-    map: basicTexture(1),
-    name: "ssph",
-  });
-  mats["sbox"] = new THREE[materialType]({
-    shininess: 10,
-    map: basicTexture(3),
-    name: "sbox",
-  });
-  mats["scyl"] = new THREE[materialType]({
-    shininess: 10,
-    map: basicTexture(5),
-    name: "scyl",
-  });
-  mats["ground"] = new THREE[materialType]({
-    shininess: 10,
-    color: 0x3d4143,
-    transparent: true,
-    opacity: 0.5,
-  });
-
-  // events
-
-  window.addEventListener("resize", onWindowResize, false);
-
-  // physics
-
-  initOimoPhysics();
-}
-
-function loop() {
-  updateOimoPhysics();
-  renderer.render(scene, camera);
-  requestAnimationFrame(loop);
-}
-
-function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-function addStaticBox(size, position, rotation) {
-  var mesh = new THREE.Mesh(geos.box, mats.ground);
-  mesh.scale.set(size[0], size[1], size[2]);
-  mesh.position.set(position[0], position[1], position[2]);
-  mesh.rotation.set(
-    rotation[0] * ToRad,
-    rotation[1] * ToRad,
-    rotation[2] * ToRad
-  );
-  scene.add(mesh);
-  grounds.push(mesh);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-}
-
-function clearMesh() {
-  var i = meshs.length;
-  while (i--) scene.remove(meshs[i]);
-  i = grounds.length;
-  while (i--) scene.remove(grounds[i]);
-  grounds = [];
-  meshs = [];
-}
-
-//----------------------------------
-//  OIMO PHYSICS
-//----------------------------------
-
-function initOimoPhysics() {
-  // world setting:( TimeStep, BroadPhaseType, Iterations )
-  // BroadPhaseType can be
-  // 1 : BruteForce
-  // 2 : Sweep and prune , the default
-  // 3 : dynamic bounding volume tree
-
-  world = new OIMO.World({ info: true, worldscale: 100 });
-  populate(1);
-  //setInterval(updateOimoPhysics, 1000/60);
-}
-
-function populate(n) {
-  var max = document.getElementById("MaxNumber").value;
-
-  if (n === 1) type = 1;
-  else if (n === 2) type = 2;
-  else if (n === 3) type = 3;
-  else if (n === 4) type = 4;
-
-  // reset old
-  clearMesh();
-  world.clear();
-  bodys = [];
-
-  //add ground
-  var ground0 = world.add({
-    size: [40, 40, 390],
-    pos: [-180, 20, 0],
-    world: world,
-  });
-  var ground1 = world.add({
-    size: [40, 40, 390],
-    pos: [180, 20, 0],
-    world: world,
-  });
-  var ground2 = world.add({
-    size: [400, 80, 400],
-    pos: [0, -40, 0],
-    world: world,
-  });
-
-  addStaticBox([40, 40, 390], [-180, 20, 0], [0, 0, 0]);
-  addStaticBox([40, 40, 390], [180, 20, 0], [0, 0, 0]);
-  addStaticBox([400, 80, 400], [0, -40, 0], [0, 0, 0]);
-
-  //add object
-  var x, y, z, w, h, d;
-  var i = max;
-
-  while (i--) {
-    if (type === 4) t = Math.floor(Math.random() * 3) + 1;
-    else t = type;
-    x = -100 + Math.random() * 200;
-    z = -100 + Math.random() * 200;
-    y = 100 + Math.random() * 1000;
-    w = 10 + Math.random() * 10;
-    h = 10 + Math.random() * 10;
-    d = 10 + Math.random() * 10;
-
-    if (t === 1) {
-      bodys[i] = world.add({
-        type: "sphere",
-        size: [w * 0.5],
-        pos: [x, y, z],
-        move: true,
-        world: world,
-      });
-      meshs[i] = new THREE.Mesh(geos.sphere, mats.sph);
-      meshs[i].scale.set(w * 0.5, w * 0.5, w * 0.5);
-    } else if (t === 2) {
-      bodys[i] = world.add({
-        type: "box",
-        size: [w, h, d],
-        pos: [x, y, z],
-        move: true,
-        world: world,
-      });
-      meshs[i] = new THREE.Mesh(geos.box, mats.box);
-      meshs[i].scale.set(w, h, d);
-    } else if (t === 3) {
-      bodys[i] = world.add({
-        type: "cylinder",
-        size: [w * 0.5, h],
-        pos: [x, y, z],
-        move: true,
-        world: world,
-      });
-      meshs[i] = new THREE.Mesh(geos.cylinder, mats.cyl);
-      meshs[i].scale.set(w * 0.5, h, w * 0.5);
-    }
-
-    meshs[i].castShadow = true;
-    meshs[i].receiveShadow = true;
-
-    scene.add(meshs[i]);
-  }
-}
-
+})
 function updateOimoPhysics() {
   if (world == null) return;
-
   world.step();
 
   var x,
@@ -327,12 +41,6 @@ function updateOimoPhysics() {
       if (mesh.material.name === "scyl") mesh.material = mats.cyl;
 
       // reset position
-      if (mesh.position.y < -100) {
-        x = -100 + Math.random() * 200;
-        z = -100 + Math.random() * 200;
-        y = 100 + Math.random() * 1000;
-        body.resetPosition(x, y, z);
-      }
     } else {
       if (mesh.material.name === "box") mesh.material = mats.sbox;
       if (mesh.material.name === "sph") mesh.material = mats.ssph;
@@ -340,7 +48,7 @@ function updateOimoPhysics() {
     }
   }
 
-  infos.innerHTML = world.getInfo();
+  // infos.innerHTML = world.getInfo();
 }
 
 function gravity(g) {
@@ -348,46 +56,278 @@ function gravity(g) {
   world.gravity = new OIMO.Vec3(0, nG, 0);
 }
 
+const config = [2, 1, 3, 1, 0xffffffff];
 //----------------------------------
-//  TEXTURES
+//  OIMO PHYSICS
 //----------------------------------
-
-function gradTexture(color) {
-  var c = document.createElement("canvas");
-  var ct = c.getContext("2d");
-  var size = 1024;
-  c.width = 16;
-  c.height = size;
-  var gradient = ct.createLinearGradient(0, 0, 0, size);
-  var i = color[0].length;
-  while (i--) {
-    gradient.addColorStop(color[0][i], color[1][i]);
+function addStaticBox(size, position, rotation) {
+  var mesh = new THREE.Mesh(geos.box, mats.ground);
+  mesh.scale.set(size[0], size[1], size[2]);
+  mesh.position.set(position[0], position[1], position[2]);
+  mesh.rotation.set(
+    rotation[0] * ToRad,
+    rotation[1] * ToRad,
+    rotation[2] * ToRad
+  );
+  scene.add(mesh);
+  grounds.push(mesh);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+class World {
+  constructor() {
+    this.meshes = [];
+    this.bodies = [];
   }
-  ct.fillStyle = gradient;
-  ct.fillRect(0, 0, 16, size);
-  var texture = new THREE.Texture(c);
-  texture.needsUpdate = true;
-  return texture;
+
+  add(object) {
+    object.setup(world, scene);
+    if (!object.static) {
+      this.meshes.push(object.mesh);
+      this.bodies.push(object.body);
+    }
+    meshs = this.meshes;
+    bodys = this.bodies;
+    scene.add(object.mesh);
+    world.gravity = new OIMO.Vec3(0, -4, 0);
+  }
+}
+class HandTracker {
+  constructor(){
+    this.positions = []
+    this.maxLength = 5
+
+  }
+  update(){
+    if (!hand){return}
+    this.positions.push(hand)
+    if (this.positions.length > this.maxLength){
+      this.positions.shift()
+    }
+    this.velocity = {x:0,y:0,z:0}
+    for (let key of ["x","y","z"]){
+      for (let position of this.positions){
+        this.velocity[key] += position[key]
+      }
+      this.velocity[key] /= this.positions.length
+    }
+    
+
+  }
+}
+class Box {
+  constructor(size, position) {
+    this.size = size;
+    this.position = position;
+    this.rotation = [0, 0, 0];
+    this.static = true;
+    // this.setup()
+  }
+  setup(world) {
+    var mesh = new THREE.Mesh(geos.box, mats.ground);
+    mesh.scale.set(...this.size);
+    mesh.position.set(...this.position);
+    mesh.rotation.set(
+      this.rotation[0] * ToRad,
+      this.rotation[1] * ToRad,
+      this.rotation[2] * ToRad
+    );
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    this.mesh = mesh;
+    this.config = {
+      type: "box",
+      size: [...this.size],
+      pos: [...this.position],
+      move: true,
+      world: world,
+    };
+    this.body = world.add(this.config);
+  }
+
+  updatePosition(newPosition) {
+    this.position = newPosition;
+    this.mesh.position.set(...this.position);
+  }
 }
 
-function basicTexture(n) {
-  var canvas = document.createElement("canvas");
-  canvas.width = canvas.height = 64;
-  var ctx = canvas.getContext("2d");
-  var color;
-  if (n === 0) color = "#3884AA"; // sphere58AA80
-  if (n === 1) color = "#61686B"; // sphere sleep
-  if (n === 2) color = "#AA6538"; // box
-  if (n === 3) color = "#61686B"; // box sleep
-  if (n === 4) color = "#AAAA38"; // cyl
-  if (n === 5) color = "#61686B"; // cyl sleep
-  ctx.fillStyle = color;
-  ctx.fillRect(0, 0, 64, 64);
-  ctx.fillStyle = "rgba(0,0,0,0.2)";
-  ctx.fillRect(0, 0, 32, 32);
-  ctx.fillRect(32, 32, 32, 32);
+class Sphere {
+  constructor(position, radius,kinematic) {
+    this.size = [radius / 2, radius / 2, radius / 2];
+    this.radius = radius;
+    this.position = position;
+    this.rotation = [0, 0, 0];
+    this.kinematic = kinematic
+    this.static = false;
+    // this.setup()
+  }
 
-  var tx = new THREE.Texture(canvas);
-  tx.needsUpdate = true;
-  return tx;
+  applyImpulse(impulse,time){
+    this.duration = time
+    this.impulse = impulse
+  }
+
+  setVelocity({x,y,z}){
+    this.body.linearVelocity.x = x
+    this.body.linearVelocity.y = y
+    this.body.linearVelocity.z = z
+
+  }
+  reset(){
+      ball.body.resetPosition(-180, 10, 180);
+  }
+
+  resetVelocity(){
+    this.body.linearVelocity.x = 0
+    this.body.linearVelocity.y = 0
+    this.body.linearVelocity.z = 0
+  }
+
+  check(){
+    if (this.duration>0){
+      this.body.applyImpulse(this.body.position,this.impulse)
+    }
+    this.duration = Math.max(this.duration-1,0)
+
+  }
+  setup(world) {
+    var mesh = new THREE.Mesh(geos.sphere, mats.sph);
+    mesh.scale.set(...this.size);
+    mesh.position.set(...this.position);
+    mesh.rotation.set(
+      this.rotation[0] * ToRad,
+      this.rotation[1] * ToRad,
+      this.rotation[2] * ToRad
+    );
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    this.mesh = mesh;
+    this.config = {
+      type: "sphere",
+      size: [this.radius * 0.5],
+      pos: [...this.position],
+      move: true,
+      world: world,
+      config: config,
+      kinematic : this.kinematic
+    };
+    this.body = world.add(this.config);
+    // this.body = world.add({type:'sphere', size:[this.radius*0.5], pos:[...this.position], move:true, world:world});
+    // this.mesh = new THREE.Mesh( geos.sphere, mats.sph );
+    // this.mesh.scale.set( this.radius*0.5, this.radius*0.5, this.radius*0.5 );
+    // this.mesh.castShadow = true;
+    // this.mesh.receiveShadow = true;
+
+    // scene.add(this.mesh);
+  }
+
+  updatePosition(newPosition) {
+    this.position = newPosition;
+    this.mesh.position.set(...this.position);
+  }
 }
+
+class Ground {
+  constructor(size,position) {
+    this.position = position
+    this.size = size
+    this.mesh = addStaticBox(size, position, [0, 0, 0]);
+    this.body = world.add({
+      size: size,
+      pos: position,
+      world: world,
+    });
+  }
+}
+var paddle, content, ball, ground0, net
+function newSetup() {
+  mouse = new THREE.Vector2()
+  ray = new THREE.Raycaster();
+  const universe = new World();
+  content = new THREE.Object3D();
+  scene.add(content)
+  // const ground1 = new Box([400, 80, 400], [0, -40, 0])
+  // const net = new Box([400, 40, 20], [0, 20, 0])
+  ball = new Sphere([0, 0, 150], 20,false);
+  //add ground
+  ground0 = new Ground([400,80,400],[0,-40,0])
+  net = new Ground([400,40,10],[0,20,0])
+  // const paddle2 = 
+  // paddle = new THREE.Object3D()
+  // scene.add(paddle)
+
+  const objects = [ball];
+  for (const object of objects) {
+    universe.add(object);
+    content.add(object.mesh)
+  }
+}
+let currentCounter = 0;
+let currentSign = 0;
+let touchTimeout = 0
+let impulseTimeout = 0;
+let handtracker = new HandTracker()
+function customLoop(){
+  handtracker.update()
+  ball.check()
+  if (!!hand){
+  ball.setVelocity(handtracker.velocity)
+  }
+
+  // console.log(ball.body.position.z)
+  touchTimeout = Math.max(touchTimeout-1,0)
+  impulseTimeout = Math.max(impulseTimeout-1,0)
+    if (ball.body.position.y < -100) {
+      ball.body.resetPosition(0, 200, 0);
+    }
+  if (world.getContact(net.body,ball.body)){
+    // alert('net!')
+  }
+  const SIZE = 1.9
+  const STRENGTH = 0.001
+  if (impulseTimeout === 0){
+
+  // if (ball.body.position.z < -SIZE){
+  //   // ball.applyImpulse({x:0,y:STRENGTH/16,z:STRENGTH},1)
+  //   ball.resetVelocity()
+  //   ball.applyImpulse({x:0,y:0.025,z:+0.018},1)
+  //   impulseTimeout = 50
+
+  //   // alert('deep end! (1)')
+  // }
+  // if (ball.body.position.z > SIZE){
+  //   // ball.applyImpulse({x:0,y:STRENGTH/16,z:-STRENGTH},1)
+  //   // alert('deep end! (2)')
+  //   ball.resetVelocity()
+  //   ball.applyImpulse({x:0,y:0.03,z:-0.0165},1)
+  //   impulseTimeout = 50
+  // }
+  }
+  if (touchTimeout === 0 && world.getContact(ball.body,ground0.body)){
+    if (Math.sign(ball.body.position.y) < 0){
+      if (currentSign === -1){
+        // alert('double bounce')
+      }
+      currentSign = -1
+    } else  {
+      if (currentSign === 1){
+        // alert('double bounce')
+      }
+      currentSign = 1
+
+    }
+    touchTimeout = 50
+
+  }
+}
+function loop() {
+  updateOimoPhysics();
+  customLoop()
+  handtracker = new HandTracker()
+  renderer.render(scene, camera);
+  // paddle.updatePosition([200*mouseX/window.innerWidth,200*mouseY/window.innerHeight,0])
+  requestAnimationFrame(loop);
+}
+window.init = init
+window.loop = loop

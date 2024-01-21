@@ -5,6 +5,7 @@
 	import Join from './Join.svelte';
 	import EndDialog from './EndDialog.svelte';
 	import Chat from './Chat.svelte';
+	import Table from "./Table.svelte"
 	import { onMount } from 'svelte';
 	import { Peer } from "peerjs";
 	import PlayerList from './PlayerList.svelte';
@@ -67,7 +68,8 @@
 		{:else}
 			<Status />
 			<PlayerList players={$roomStore.players} teams={$roomStore.teams} turn={$roomStore.turn}/>
-			<!-- <LiveGesture /> -->
+			<Table></Table>
+			<LiveGesture />
 			<VideoFeed />
 			<!-- <Board board={$roomStore.board} width={$roomStore.boardWidth} height={$roomStore.boardHeight}/> -->
 			<EndDialog />

@@ -1,6 +1,9 @@
 let direction = 1;
 let timeout = 1;
 var ball,table;
+
+const DIAGONAL = {x:0.016,y:0.03,z:-0.015}
+const STRAIGHT = {x:0,y:0.025,z:+0.018}
 window.addEventListener('keydown',function(e){
   if (e.key == 'a'){
     direction = 1
@@ -143,7 +146,13 @@ class Sphere {
   }
 
   reset(){
-      ball.body.resetPosition(0, 10, 180);
+      ball.body.resetPosition(-180, 10, 180);
+  }
+
+  resetVelocity(){
+    this.body.linearVelocity.x = 0
+    this.body.linearVelocity.y = 0
+    this.body.linearVelocity.z = 0
   }
 
   check(){
@@ -244,19 +253,21 @@ function customLoop(){
   const STRENGTH = 0.001
   if (impulseTimeout === 0){
 
-  if (ball.body.position.z < -SIZE){
-    // ball.applyImpulse({x:0,y:STRENGTH/16,z:STRENGTH},1)
-    ball.applyImpulse({x:0,y:0.03,z:+0.0165},1)
-    impulseTimeout = 50
+  // if (ball.body.position.z < -SIZE){
+  //   // ball.applyImpulse({x:0,y:STRENGTH/16,z:STRENGTH},1)
+  //   ball.resetVelocity()
+  //   ball.applyImpulse({x:0,y:0.025,z:+0.018},1)
+  //   impulseTimeout = 50
 
-    // alert('deep end! (1)')
-  }
-  if (ball.body.position.z > SIZE){
-    // ball.applyImpulse({x:0,y:STRENGTH/16,z:-STRENGTH},1)
-    // alert('deep end! (2)')
-    ball.applyImpulse({x:0,y:0.03,z:-0.0165},1)
-    impulseTimeout = 50
-  }
+  //   // alert('deep end! (1)')
+  // }
+  // if (ball.body.position.z > SIZE){
+  //   // ball.applyImpulse({x:0,y:STRENGTH/16,z:-STRENGTH},1)
+  //   // alert('deep end! (2)')
+  //   ball.resetVelocity()
+  //   ball.applyImpulse({x:0,y:0.03,z:-0.0165},1)
+  //   impulseTimeout = 50
+  // }
   }
   if (touchTimeout === 0 && world.getContact(ball.body,ground0.body)){
     if (Math.sign(ball.body.position.y) < 0){

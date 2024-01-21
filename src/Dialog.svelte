@@ -52,7 +52,7 @@
 		align-items: center;
 		gap: 0.5em;
 		color: #4883b5;
-		background: #fff6ec;
+		background: #2c2c2c;
 		width: 30em;
 		position: absolute;
 		top: 50%;

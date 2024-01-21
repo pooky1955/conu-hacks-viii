@@ -30,11 +30,17 @@
 		border: 0.15em solid #2a2a2a;
 		margin: 0;
 		box-sizing: content-box;
+		background-color: #505050;
+	}
+
+	::placeholder {
+		color: #666;
+		opacity: 1; /* Firefox */
 	}
 
 	input:hover:not(:disabled),
 	input:focus:not(:disabled) {
-		border: 0.15em solid #444;
+		border: 0.15em solid #333;
 	}
 
 	@media (max-width: 640px) {

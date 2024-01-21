@@ -25,6 +25,7 @@
 			$socketStore.auth = { sessionId };
 			$sessionStore = sessionId;
 			$socketStore.userId = userId;
+			window.socket = $socketStore;
 			$socketStore.emit('getUser', { id: $socketStore.userId}, (user) => {
 				// console.log("user", user)	
 				$userStore = user

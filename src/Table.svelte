@@ -2,10 +2,10 @@
 	import { onMount } from "svelte"
 	import VideoFeed from "./VideoFeed.svelte"
 	import LiveGesture from "./LiveGesture.svelte"
-  import Status from "./Status.svelte"
+	import Status from "./Status.svelte"
 
 	onMount(() => {
-		alert("mounted canvas!")
+		// alert("mounted canvas!")
 		init()
 		loop()
 	})
@@ -31,13 +31,13 @@
 		height: 100vh;
 	}
 
-  #status {
-    position: absolute;
-    top: 2%;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-  }
+	#status {
+		position: absolute;
+		top: 2%;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 2;
+	}
 
 	#liveGesture {
 		position: absolute;
@@ -52,7 +52,7 @@
 		/* left: 50%;
 		transform: translateX(-50%); */
 		z-index: 1;
-    width: 100%;
+		width: 100%;
 	}
 
 	#canvas {
